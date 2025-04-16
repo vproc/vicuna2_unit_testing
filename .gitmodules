@@ -4,10 +4,10 @@
 [submodule "rtl/vicuna2_core"]
 	path = rtl/vicuna2_core
 	url = https://github.com/vproc/vicuna2_core.git
-[submodule "rtl/cv32e40x_f_zfh"]
-	path = rtl/cv32e40x_f_zfh
-	url = https://github.com/ParkerJones567/cv32e40x_f_zhf.git
-	branch = f_zhf_fixes
 [submodule "rtl/fpu_ss"]
 	path = rtl/fpu_ss
 	url = https://github.com/ParkerJones567/fpu_ss.git
+[submodule "rtl/cv32e40x"]
+	path = rtl/cv32e40x
+	url = https://github.com/ParkerJones567/cv32e40x_f_zhf.git
+	branch = f_zhf_fixes
