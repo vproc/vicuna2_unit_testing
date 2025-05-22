@@ -29,13 +29,6 @@ cd scripts
 ./build_verilator.sh
 
 ######
-#   llvm setup
-######
-
-./build_llvm.sh
-
-
-######
 #   GCC setup
 ######
 
@@ -46,3 +39,7 @@ cd scripts
 ./build_gcc.sh rv32imf_zve32f ilp32f
 ./build_gcc.sh rv32imf_zfh_zve32f_zvfh ilp32f
 
+######
+# Download Spike source with ChipsAlliance edits
+######
+./download_spike.sh

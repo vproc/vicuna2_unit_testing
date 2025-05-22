@@ -46,8 +46,6 @@ int main(int argc, char **argv) {
     
     int csv_out = 0;
 
-    fprintf(stderr, "testing: %d\n", argc);
-
     int inst_trace_out = 0;
     
     if(argc > 7){
@@ -234,7 +232,7 @@ int main(int argc, char **argv) {
                 
             
             
-            bool main_reached = false; //detect if main has been reached to begin collecting statistics
+            bool main_reached = true; //detect if main has been reached to begin collecting statistics
             bool exiting = false;
             
             //Variables for stall detection
@@ -263,6 +261,10 @@ int main(int argc, char **argv) {
             int num_vec_instr = 0;
            
             int  cycles_begin_trace = 0;  //Trace begins at this cycle count.  TODO: expose to the command line
+
+            // variables to keep track of vector tests successes/failures
+            int v_test_success = 0;
+            int v_test_failure = 0;
             
             while (end_cnt < extra_cycles) {
                 // if ABORT_CYCLES is defined, then it specifies the number of cycles after which
@@ -416,21 +418,30 @@ int main(int argc, char **argv) {
                 if ( current_IF_PC == 0x00000078u ) {
                 
                    fprintf(stderr, "ERROR: TEST FAILURE - Output Mismatch\n");
-                   exit_code = 1;
-                   break;
+                   v_test_failure++;
                 }
-                //A jump to address 0x74 is a failed test caused by an interrupt being called (all other interrupts also funnel here)
-                if ( current_IF_PC == 0x000000074u ) {
+                //A jump to address 0x70 signals a failed test due to an interrupt call
+                if ( current_IF_PC == 0x000000070u ) {
                 
                    fprintf(stderr, "ERROR: TEST FAILURE - Interrupt Called\n");
                    exit_code = 1;
                    break;
                 }
+
+                //A jump to address 0x74 is a correct program exit
+                if ( current_IF_PC == 0x000000074u ) {
+                
+                   fprintf(stderr, "Program Execution ended\n");
+                   if ( v_test_failure > 0)
+                   {
+                        exit_code = 1;
+                   }
+                   break;
+                }
                 
                 if (end_cnt > 0 || ((top->mem_req_o == 1 || top->mem_ireq_o == 1) && current_IF_PC == 0x0000007Cu)) {
-                    end_cnt++;
                     fprintf(stderr, "SUCCESS: TEST PASS - Output Match\n");
-                    exiting = true;
+                    v_test_success++;
                 }
 
                 //After 10000 cycles at the same fetch PC, exit
@@ -440,11 +451,14 @@ int main(int argc, char **argv) {
                     cycles_stalled = 0;
                 }
                 
-                if(cycles_stalled >= 10000) { //TODO: Expose this to the command line
-                    fprintf(stderr, "ERROR: SIMULATION STALLED FOR 10000 CYCLES AT IF_PC = 0x%x\n", current_IF_PC);
+
+                if(cycles_stalled >= 300 ) { //TODO: Expose this to the command line
+                    fprintf(stderr, "ERROR: SIMULATION STALLED FOR 300 CYCLES AT IF_PC = 0x%x\n", current_IF_PC);
                     exit_code = 1;
                     break;
                 }
+
+            
                 
                 //////////
                 // Outputs + Statistics
@@ -539,7 +553,9 @@ int main(int argc, char **argv) {
             
             fprintf(stderr, "Vector Loads     : %d\n", vector_loads);
             fprintf(stderr, "Vector Stores    : %d\n", vector_stores);
-            fprintf(stderr, "Other Vector Ops : %d\n", other_vector_ops);
+            fprintf(stderr, "Other Vector Ops : %d\n\n", other_vector_ops);
+
+            fprintf(stderr, "Tests Passed     : %d / %d\n", v_test_success, (v_test_success+v_test_failure));
 
             
         }

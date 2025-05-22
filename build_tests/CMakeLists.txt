@@ -17,11 +17,14 @@ message(STATUS "CMake Version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CM
 set(RISCV_ARCH rv32im CACHE STRING "Specify the configuration")
 set(MEM_LATENCY 1 CACHE STRING "Memory latency")
 set(MEM_W 32 CACHE STRING "Width of main memory data port in bits")
+set(VREG_W 128 CACHE STRING "Width of Vector Registers in Bits")
+set(INTEGER 0 CACHE STRING "Variable for ChipsAlliance Tests to build only integer vector tests")
 
 option(TRACE        "Enable trace outputs"                                         OFF)
 option(PRINT        "Enable print statements"                                      OFF)
 
-option(LEGACY       "Use Legacy unit tests"                                         ON)
+option(LEGACY       "Use Legacy unit tests"                                        OFF)
+option(BUILD_TEST_SOURCE "Build ChipsAlliance Tests from source.  Can skip if already build for chosen configuration" ON)
 
 
 #####
@@ -33,6 +36,7 @@ set(MODEL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../build_model/build)
 set(TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../test_sources)
 set(BSP_TOP ${CMAKE_CURRENT_SOURCE_DIR}/../bsp)
 set(CMAKE_TOP ${CMAKE_CURRENT_SOURCE_DIR}/../CMake)
+set(TOOLCHAIN_TOP ${CMAKE_CURRENT_SOURCE_DIR}/../toolchain)
 
 string(REPLACE "/build_tests" "" REPO_TOP ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -48,12 +52,9 @@ option(RISCV_ZVE32X "Use the RISC-V Embedded V Extension" OFF)
 option(RISCV_ZVE32F "Use the RISC-V Embedded V Float Extension" OFF)
 option(RISCV_ZVFH "Use the RISC-V V Half Float Extension" OFF)
 
-
-
-set(AUTOVEC_FLAGS "")
-
 if(${RISCV_ARCH} STREQUAL "rv32im") 
     set(RISCV_ABI ilp32)
+
     
 elseif(${RISCV_ARCH} STREQUAL "rv32imf")
     set(RISCV_ABI ilp32f)  
@@ -67,6 +68,7 @@ elseif(${RISCV_ARCH} STREQUAL "rv32imf_zfh")
 elseif(${RISCV_ARCH} STREQUAL "rv32im_zve32x")
     set(RISCV_ABI ilp32) 
     set(RISCV_ZVE32X ON)
+    set(INTEGER 1)
     
 elseif(${RISCV_ARCH} STREQUAL "rv32imf_zve32f")
     set(RISCV_ABI ilp32f) 
@@ -101,7 +103,7 @@ set(CMAKE_SYSTEM_PROCESSOR ${RISCV_ARCH})
 set(CMAKE_SYSTEM_NAME Generic)
 
 
-set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/llvm_18_toolchain.cmake")
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/GCC_toolchain.cmake")
 
 ####
 # Set build mode, Release by default
@@ -151,12 +153,10 @@ include(CTest)
 #Add Program Subdirectories
 ########
 
-add_subdirectory(../bsp bsp)
-
 if (LEGACY)
     add_subdirectory(../test_sources/legacy legacy)
 else()
-    #add_subdirectory(../test_sources/riscv-vector-tests vector-tests)
+    add_subdirectory(../test_sources vector-tests)
 endif()
 
 

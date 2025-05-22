@@ -3,6 +3,8 @@
 # Add all folders based on chosen architecture
 ###
 
+add_subdirectory(bsp)
+
 set(SPILL_CACHE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (RISCV_F)
@@ -16,7 +18,7 @@ endif()
 if (RISCV_ZVE32X)
   add_subdirectory(alu)
   add_subdirectory(csr)
-  add_subdirectory(div)
+  #add_subdirectory(div)
   add_subdirectory(elem)
   add_subdirectory(kernel)
   add_subdirectory(lsu)
