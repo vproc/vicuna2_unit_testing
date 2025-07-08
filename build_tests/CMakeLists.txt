@@ -37,6 +37,8 @@ set(TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../test_sources)
 set(BSP_TOP ${CMAKE_CURRENT_SOURCE_DIR}/../bsp)
 set(CMAKE_TOP ${CMAKE_CURRENT_SOURCE_DIR}/../CMake)
 set(TOOLCHAIN_TOP ${CMAKE_CURRENT_SOURCE_DIR}/../toolchain)
+set(SPIKE_DIR ${TOOLCHAIN_TOP}/riscv-isa-sim/build/)
+set(SCRIPTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/)
 
 string(REPLACE "/build_tests" "" REPO_TOP ${CMAKE_CURRENT_SOURCE_DIR})
 

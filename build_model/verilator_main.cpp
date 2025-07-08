@@ -10,7 +10,7 @@
 
 #include "Vvproc_top_vproc_top.h"
 #include "Vvproc_top_cv32e40x_core__pi1.h"
-//#include "Vvproc_top_vproc_core__pi2.h"
+#include "Vvproc_top_vproc_core__pi2.h"
 //#include "Vvproc_top_vproc_decoder__pi9.h"
 //#include "Vvproc_top_vproc_decoder__V800_Cb_X20_Dz3.h"
 //#include "Vvproc_top_vproc_decoder__V800_Cb_X40_Dz3.h"
@@ -23,39 +23,20 @@
 #ifdef TRACE_VCD
 #include "verilated_vcd_c.h"
 typedef VerilatedVcdC VerilatedTrace_t;
-#else
-#ifdef TRACE_FST
-#include "verilated_fst_c.h"
-typedef VerilatedFstC VerilatedTrace_t;
+vluint64_t main_time = 0;
 #else
 typedef int VerilatedTrace_t;
 #endif
-#endif
-
-static void log_cycle(Vvproc_top *top, VerilatedTrace_t *tfp, FILE *fcsv);
 
 int main(int argc, char **argv) {
     fprintf(stderr, "Starting Verilator Main()\n");
     
     int exit_code = 0;
     
-    if (argc != 6 && argc != 7 && argc != 8 && argc != 9) {
-        fprintf(stderr, "Usage: %s PROG_PATHS_LIST MEM_W MEM_SZ MEM_LATENCY EXTRA_CYCLES [INST_TRACE_FILE] [MEM_TRACE_FILE] [WAVEFORM_FILE]\n", argv[0]);
+    if (argc != 8 && argc != 9) {
+        fprintf(stderr, "ERROR: Correct Usage: %s PROG_PATHS_LIST MEM_W MEM_SZ MEM_LATENCY EXTRA_CYCLES TEST_NAME VREG_W [WAVEFORM_FILE]\n", argv[0]);
         return 1;
-    }
-    
-    int csv_out = 0;
-
-    int inst_trace_out = 0;
-    
-    if(argc > 7){
-        csv_out = 1;
-    }
-
-    if(argc > 6){
-        inst_trace_out = 1;
-    }
-    
+    }  
 
     int mem_w, mem_sz, mem_latency, extra_cycles;
     {
@@ -90,22 +71,16 @@ int main(int argc, char **argv) {
         fprintf(stderr, "ERROR: opening `%s': %s\n", argv[1], strerror(errno));
         return 2;
     }
-    
-    FILE *fcsv;
-    if (csv_out == 1) {
-    
-        fcsv = fopen(argv[7], "w");
-        if (fcsv == NULL) {
-            fprintf(stderr, "ERROR: opening `%s': %s\n", argv[7], strerror(errno));
-            return 2;
-        }
-        fprintf(fcsv, "rst_ni;mem_req;mem_addr;pend_vreg_wr_map_o;\n");
-    }
 
-    FILE *inst_trace;
-    if (inst_trace_out == 1) {
-        inst_trace = fopen(argv[6], "w");
-    }
+    /*Log File for Scalar Registers*/
+    std::string filename=(std::string(argv[6])+std::string("_xreg_commits_verilator.txt"));
+    FILE *fxreglog = fopen(filename.c_str(), "w");
+
+    /*Log File for Vector Registers.  Separate log because actual writes to VREGs might be out of order relative to the Xregs.  Should NOT be out of order relative to themselves.*/
+    filename=(std::string(argv[6])+std::string("_vreg_commits_verilator.txt"));
+    FILE *fvreglog = fopen(filename.c_str(), "w");
+
+
 
     unsigned char *mem = (unsigned char *)malloc(mem_sz);
     if (mem == NULL) {
@@ -128,7 +103,7 @@ int main(int argc, char **argv) {
 
     Vvproc_top *top = new Vvproc_top;
     VerilatedTrace_t *tfp = NULL;
-#if defined(TRACE_VCD) || defined(TRACE_FST)
+#if defined(TRACE_VCD)
     if (argc == 9) {
         tfp = new VerilatedTrace_t;
         top->trace(tfp, 99);  // Trace 99 levels of hierarchy
@@ -220,9 +195,6 @@ int main(int argc, char **argv) {
                 top->eval();
                 top->clk_i = 0;
                 top->eval();
-                if (csv_out == 1) {
-                    log_cycle(top, tfp, fcsv);
-                }
             }
             top->rst_ni = 1;
             top->eval();
@@ -231,8 +203,8 @@ int main(int argc, char **argv) {
                 abort_cnt  = 0; // count number of cycles since mem_req_o last toggled
                 
             
-            
-            bool main_reached = true; //detect if main has been reached to begin collecting statistics
+            char *endptr;
+            int vreg_w = strtol(argv[7], &endptr, 10);
             bool exiting = false;
             
             //Variables for stall detection
@@ -402,10 +374,6 @@ int main(int argc, char **argv) {
                 // falling clock edge
                 top->clk_i = 0;
                 top->eval();
-                 
-                
-                
-                main_reached = (current_IF_PC == 0x00002000u) | main_reached;  //Vicuna Linker always puts MAIN (or run_test) at addr 2000.  Wait to check for a stall/abort until this has passed.
                 
                 //Need to use PC to exit/abort due to I cache
                 current_IF_PC = top->vproc_top->core->pc_if;
@@ -463,97 +431,65 @@ int main(int argc, char **argv) {
                 //////////
                 // Outputs + Statistics
                 //////////
-                
-                //Log File
-                if (csv_out == 1 && main_reached && cycles > cycles_begin_trace) {
-                // log data once main has been reached and desired start point has been reached
-                    log_cycle(top, tfp, fcsv);
-                }
-                
-                //Cycle count and instruction count
-                if(main_reached) {
-                    if(!exiting)
-                    {
-                        cycles++;
-                        if (inst_trace_out == 1) {
-                            fprintf(inst_trace, "%08x\n", top->vproc_top->core->instruction_wb);
-                        }
-                    }
-                    abort_cnt = (top->mem_req_o == mem_req_o_tmp) ? abort_cnt + 1 : 0;
-                    if ((current_IF_PC != last_IF_PC) && !exiting)
-                    {
-                        instructions++;
-                    }
-                }
-                
-                
-                //Check if a result from the vector unit is ready and accepted
-                //By checking here instead of issue, current VL is correct for vsetvli
-                if( top->vproc_top->vcore_result_valid && top->vproc_top->vcore_result_ready && main_reached)
+                //write vcd log
+                #if defined(TRACE_VCD)
+                if (tfp != NULL)
                 {
-                    num_vec_instr++;
-                    sum_vec_lengths+= top->vproc_top->csr_vl_o; //running sum of number of elements in vectors
-                    int cur_vec_len_bytes = 0;
-                    switch ((top->vproc_top->csr_vtype_o >> 3) & 7) //sew stored in bits [5:3]
-                    { 
-                      case 0: //sew == 8
-                        sum_vec_lengths_bytes+= top->vproc_top->csr_vl_o; //each element is one byte
-                        cur_vec_len_bytes = top->vproc_top->csr_vl_o;
-                        break;
-                      case 1: //sew == 16
-                        sum_vec_lengths_bytes+= top->vproc_top->csr_vl_o * 2; // each element two bytes
-                        cur_vec_len_bytes = top->vproc_top->csr_vl_o * 2;
-                        break;
-                      case 2: //sew == 32
-                        sum_vec_lengths_bytes+= top->vproc_top->csr_vl_o * 4; // each element four bytes
-                        cur_vec_len_bytes = top->vproc_top->csr_vl_o * 4;
-                        break;
-                      default:
-                        fprintf(stderr, "UNSUPPORTED SEW DETECTED\n");
-                    }
-                    
-                    switch (top->vproc_top->csr_vtype_o & 7) //LMUL stored in bits [2:0]
-                    { 
-                      case 0: //LMUL = 1
-                          sum_vec_lengths_bytes+= ((float)cur_vec_len_bytes)/((float)top->vproc_top->csr_vlen_b_o); //each element is one byte
-
-                      case 1: //LMUL == 2
-                          sum_vec_percentage += ((float)cur_vec_len_bytes)/((float)top->vproc_top->csr_vlen_b_o * 2); // 2 vector regs in group
-                        break;
-                      case 2: //LMUL == 4
-                          sum_vec_lengths_bytes+= ((float)cur_vec_len_bytes)/((float)top->vproc_top->csr_vlen_b_o * 4); // 4 vector regs in group
-                        break;
-                      case 4: //LMUL == 8
-                          sum_vec_lengths_bytes+= ((float)cur_vec_len_bytes)/((float)top->vproc_top->csr_vlen_b_o * 8); // 4 vector regs in group
-                      break;
-                      case 7: //LMUL = 1/2
-                          sum_vec_lengths_bytes+= ((float)cur_vec_len_bytes)/((float)top->vproc_top->csr_vlen_b_o/2.0); //each element is one byte
-                      case 6: //LMUL = 1/4
-                          sum_vec_lengths_bytes+= ((float)cur_vec_len_bytes)/((float)top->vproc_top->csr_vlen_b_o/4.0); //each element is one byte
-                      case 5: //LMUL = 1/8
-                          sum_vec_lengths_bytes+= ((float)cur_vec_len_bytes)/((float)top->vproc_top->csr_vlen_b_o/8.0); //each element is one byte
-                      default:
-                          sum_vec_lengths_bytes+= ((float)cur_vec_len_bytes)/((float)top->vproc_top->csr_vlen_b_o); //each element is one byte
-                        break;
-                    }
-                
-                
+                    main_time++;
+                    tfp->dump(main_time);
                 }
+                #endif
+
+
+                //write commit log for xregs
+                if(top->vproc_top->core->rf_we_wb)
+                {
+                    fprintf(fxreglog, "x%d 0x%08X\n", top->vproc_top->core->rf_waddr_wb, top->vproc_top->core->rf_wdata_wb);
+                }
+
+                //write commit log for vregs.  Currently set up for one write port.  Only log a commit when an element is actually written
+                if(top->vproc_top->v_core->vregfile_wr_en_q & (top->vproc_top->v_core->vregfile_wr_mask_q != 0))
+                {
+                    fprintf(fvreglog, "v%d 0x", top->vproc_top->v_core->vregfile_wr_addr_q);
+                    unsigned char* reg_write_data = (unsigned char*)&(top->vproc_top->v_core->vregfile_wr_data_q);
+                    //bytes written out in this order to match the outputs from spike
+                    for (int i = vreg_w/8-1; i >= 0; i--)
+                    {   
+                        //write XX for bytes that are masked out, these aren't written
+                        if (top->vproc_top->v_core->vregfile_wr_mask_q & (0x1 << i))
+                        {
+                            fprintf(fvreglog, "%02x", reg_write_data[i]);
+                        }
+                        else
+                        {
+                            fprintf(fvreglog, "XX");
+                        }
+
+                    }
+                    fprintf(fvreglog, "\n");
+                }
+                
+
+                //Cycle count and instruction count
+                
+                if(!exiting)
+                {
+                    cycles++;
+                }
+                abort_cnt = (top->mem_req_o == mem_req_o_tmp) ? abort_cnt + 1 : 0;
+                if ((current_IF_PC != last_IF_PC) && !exiting) //TODO, update to use WB_PC
+                {
+                    instructions++;
+                }
+                
+                
+
                 
                 
             }
             
             fprintf(stderr, "Total Cycles: %d\n", cycles);
             fprintf(stderr, "Instruction Count: %d CPI : %f \n\n", instructions, ((float)(cycles))/((float)instructions));
-            
-            fprintf(stderr, "Number of Vector Instructions Executed: %d  \n", num_vec_instr);
-            fprintf(stderr, "AVG VL Elements: %f  \n", ((float)(sum_vec_lengths))/((float)num_vec_instr));
-            fprintf(stderr, "AVG VL Bytes: %f  \n\n", ((float)(sum_vec_lengths_bytes))/((float)num_vec_instr));
-            fprintf(stderr, "AVG VREG Usage %: %f  \n\n", ((float)(sum_vec_percentage))/((float)num_vec_instr) * 100);
-            
-            fprintf(stderr, "Vector Loads     : %d\n", vector_loads);
-            fprintf(stderr, "Vector Stores    : %d\n", vector_stores);
-            fprintf(stderr, "Other Vector Ops : %d\n\n", other_vector_ops);
 
             fprintf(stderr, "Tests Passed     : %d / %d\n", v_test_success, (v_test_success+v_test_failure));
 
@@ -577,7 +513,9 @@ int main(int argc, char **argv) {
 
 #if defined(TRACE_VCD) || defined(TRACE_FST)
     if (tfp != NULL)
+    {
         tfp->close();
+    }
 #endif
     top->final();
     free(prog_path);
@@ -593,30 +531,10 @@ int main(int argc, char **argv) {
     free(mem_rdata_queue);
     free(mem_idata_queue);
     free(mem_err_queue);
-    if (csv_out == 1) {
-        fclose(fcsv);
-    }
 
     fclose(fprogs);
+    fclose(fxreglog);
+    fclose(fvreglog);
 
-
-    if (inst_trace_out == 1) {
-        fclose(inst_trace);
-    }
     return exit_code;
-}
-
-vluint64_t main_time = 0;
-double sc_time_stamp() {
-    return main_time;
-}
-
-static void log_cycle(Vvproc_top *top, VerilatedTrace_t *tfp, FILE *fcsv) {
-    fprintf(fcsv, "%d;%d;%08X;%08X;%08X;\n",
-            top->rst_ni, top->mem_req_o, top->mem_addr_o, top->pend_vreg_wr_map_o, 0);
-    main_time++;
-#if defined(TRACE_VCD) || defined(TRACE_FST)
-    if (tfp != NULL)
-        tfp->dump(main_time);
-#endif
 }
