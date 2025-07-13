@@ -456,7 +456,7 @@ int main(int argc, char **argv) {
                     for (int i = vreg_w/8-1; i >= 0; i--)
                     {   
                         //write XX for bytes that are masked out, these aren't written
-                        if (top->vproc_top->v_core->vregfile_wr_mask_q & (0x1 << i))
+                        if ((int)top->vproc_top->v_core->vregfile_wr_mask_q & (0x1 << i))
                         {
                             fprintf(fvreglog, "%02x", reg_write_data[i]);
                         }
