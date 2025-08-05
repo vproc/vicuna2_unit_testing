@@ -30,7 +30,7 @@ macro(add_unit_test TEST_NAME)
                        COMMAND srec_cat ${TEST_NAME}.bin -binary -offset 0x0000 -byte-swap 4 -o ${TEST_NAME}.vmem -vmem
                        COMMAND rm -f prog_${TEST_NAME}.txt
                        COMMAND echo -n "${BUILD_DIR}/vector-tests/${TEST_NAME}.vmem" > prog_${TEST_NAME}.txt
-                       COMMAND ${CMAKE_OBJDUMP} -D ${TEST_NAME}.elf > ${TEST_NAME}_dump.txt
+                       #COMMAND ${CMAKE_OBJDUMP} -D ${TEST_NAME}.elf > ${TEST_NAME}_dump.txt
                        )
     
      
@@ -77,10 +77,10 @@ macro(add_unit_test_Spike TEST_NAME)
     target_link_options(${TEST_NAME}_Spike PRIVATE "-nostdlib")
     target_link_options(${TEST_NAME}_Spike PRIVATE "-T${TEST_SOURCES}/spike_cosim_support/link.ld")
 
-    add_custom_command(TARGET ${TEST_NAME}_Spike
-                       POST_BUILD
-                       COMMAND ${CMAKE_OBJDUMP} -D ${TEST_NAME}_Spike.elf > ${TEST_NAME}_Spike_dump.txt
-                       )
+    #add_custom_command(TARGET ${TEST_NAME}_Spike
+    #                   POST_BUILD
+    #                   COMMAND ${CMAKE_OBJDUMP} -D ${TEST_NAME}_Spike.elf > ${TEST_NAME}_Spike_dump.txt
+    #                   )
 	              
 
     #Add Test
