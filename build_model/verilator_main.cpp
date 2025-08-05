@@ -11,6 +11,8 @@
 #include "Vvproc_top_vproc_top.h"
 #include "Vvproc_top_cv32e40x_core__pi1.h"
 #include "Vvproc_top_vproc_core__pi2.h"
+#include "Vvproc_top_fpu_ss__I1_O0_F0_FBz6_FCz7.h"
+#include "Vvproc_top_fpu_ss_regfile.h"
 //#include "Vvproc_top_vproc_decoder__pi9.h"
 //#include "Vvproc_top_vproc_decoder__V800_Cb_X20_Dz3.h"
 //#include "Vvproc_top_vproc_decoder__V800_Cb_X40_Dz3.h"
@@ -79,6 +81,10 @@ int main(int argc, char **argv) {
     /*Log File for Vector Registers.  Separate log because actual writes to VREGs might be out of order relative to the Xregs.  Should NOT be out of order relative to themselves.*/
     filename=(std::string(argv[6])+std::string("_vreg_commits_verilator.txt"));
     FILE *fvreglog = fopen(filename.c_str(), "w");
+
+    /*Log File for Scalar Floating Point Registers*/
+    filename=(std::string(argv[6])+std::string("_freg_commits_verilator.txt"));
+    FILE *ffreglog = fopen(filename.c_str(), "w");
 
 
 
@@ -385,7 +391,7 @@ int main(int argc, char **argv) {
                 //A jump to address 0x78 is a failed test caused by mismatched output
                 if ( current_IF_PC == 0x00000078u ) {
                 
-                   fprintf(stderr, "ERROR: TEST FAILURE - Output Mismatch\n");
+                   fprintf(stderr, "ERROR: TEST FAILURE - TEST %d - Output Mismatch\n", v_test_failure+v_test_success+2);
                    v_test_failure++;
                 }
                 //A jump to address 0x70 signals a failed test due to an interrupt call
@@ -408,7 +414,7 @@ int main(int argc, char **argv) {
                 }
                 
                 if (end_cnt > 0 || ((top->mem_req_o == 1 || top->mem_ireq_o == 1) && current_IF_PC == 0x0000007Cu)) {
-                    fprintf(stderr, "SUCCESS: TEST PASS - Output Match\n");
+                    fprintf(stderr, "SUCCESS: TEST PASS - TEST %d - Output Match\n", v_test_failure+v_test_success+2);
                     v_test_success++;
                 }
 
@@ -444,11 +450,17 @@ int main(int argc, char **argv) {
                 //write commit log for xregs
                 if(top->vproc_top->core->rf_we_wb)
                 {
-                    fprintf(fxreglog, "x%d 0x%08X\n", top->vproc_top->core->rf_waddr_wb, top->vproc_top->core->rf_wdata_wb);
+                    fprintf(fxreglog, "x%d 0x%08x\n", top->vproc_top->core->rf_waddr_wb, top->vproc_top->core->rf_wdata_wb);
                 }
 
-                //write commit log for vregs.  Currently set up for one write port.  Only log a commit when an element is actually written
-                if(top->vproc_top->v_core->vregfile_wr_en_q & (top->vproc_top->v_core->vregfile_wr_mask_q != 0))
+                //write commit log for fregs
+                if(top->vproc_top->fpu_ss_i->gen_fp_register_file__DOT__fpu_ss_regfile_i->fpr_commit_valid)
+                {
+                    fprintf(ffreglog, "f%d 0x%08x\n", top->vproc_top->fpu_ss_i->gen_fp_register_file__DOT__fpu_ss_regfile_i->fpr_commit_addr, top->vproc_top->fpu_ss_i->gen_fp_register_file__DOT__fpu_ss_regfile_i->fpr_commit_data);
+                }
+
+                //write commit log for vregs.  Currently set up for one write port.  Only log a commit when an element is actually written. Mask handled internally in case entire write is masked out
+                if(top->vproc_top->v_core->vregfile_wr_en_q)
                 {
                     fprintf(fvreglog, "v%d 0x", top->vproc_top->v_core->vregfile_wr_addr_q);
                     unsigned char* reg_write_data = (unsigned char*)&(top->vproc_top->v_core->vregfile_wr_data_q);
@@ -535,6 +547,7 @@ int main(int argc, char **argv) {
     fclose(fprogs);
     fclose(fxreglog);
     fclose(fvreglog);
+    fclose(ffreglog);
 
     return exit_code;
 }

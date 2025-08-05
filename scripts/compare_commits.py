@@ -19,19 +19,23 @@ cur_dir = os.getcwd()
 spike_commit_log = []
 vreg_commit_log = []
 
+spike_float_log = []
+freg_commit_log = []
+
 spike_commit_log_file = open(cur_dir + "/" + test_name + "_register_commits_Spike.txt", "r")
 vreg_commit_log_file = open(cur_dir + "/" + test_name + "_vreg_commits_verilator.txt", "r")
+freg_commit_log_file = open(cur_dir + "/" + test_name + "_freg_commits_verilator.txt", "r")
 
 
 
 #parse all elements in log, create ordered array of ["VREG", "VALUE"]
 for line in spike_commit_log_file:
     #Filter out all non-vreg commits
-    #print(line)
     line=line.replace("  ", " ")
     line=line.replace("\n", "")
     line=line.split(" ")
-    #Filter out all non-vreg commits.  Vreg writes have the element width at the fifth element (e8, e16, e32).  Includes accesses to memory(vector stores)
+    #Filter out all non-vreg commits.  Vreg writes have the element width at the seventh element (e8, e16, e32).  Includes accesses to memory(vector stores)
+
     if (len(line) >= 10):
         if (line[6].find('e') != -1):
             e=int(line[6].replace("e", ""))
@@ -56,6 +60,19 @@ for line in spike_commit_log_file:
                             vl_bytes=vl_bytes-1
 
                     spike_commit_log.append([line[9+2*i], "0x"+ commit_data])
+
+
+    #freg commits have the freg number in the seventh position and data in the 8th
+    if (len(line) >= 7):
+        
+            if (line[6].find('f') != -1 and line[6].find('_') == -1):
+                spike_float_log.append([line[6], line[7]])
+
+            if (line[len(line)-2].find('f') != -1 and line[len(line)-2].find('_') == -1):
+                spike_float_log.append([line[len(line)-2], line[len(line)-1]])
+    
+
+
                 
 
 for line in vreg_commit_log_file:
@@ -63,16 +80,21 @@ for line in vreg_commit_log_file:
     line=line.split(" ")
     vreg_commit_log.append(line)
 
+for line in freg_commit_log_file:
+    line=line.replace("\n", "")
+    line=line.split(" ")
+    freg_commit_log.append(line)
 
 
 
-##perform comparison between the commit logs. NOTE: it is possible for verilator commits to be in a different order than in spike (due to operations in different pipelines with no data dependencies)
+
+##perform comparison between the vector commit logs. NOTE: it is possible for verilator commits to be in a different order than in spike (due to operations in different pipelines with no data dependencies)
 
 print("vreg commits " + str(len(vreg_commit_log)))
-print("spike commits " + str(len(spike_commit_log)))
+print("spike v commits " + str(len(spike_commit_log)))
 
 if(len(vreg_commit_log) != len(spike_commit_log)):
-    print("WARNING: COMMIT LOG LENGTH MISMATCH")
+    print("WARNING: VECTOR COMMIT LOG LENGTH MISMATCH")
     exitcode = -1
 
 for i in range(len(spike_commit_log)):
@@ -103,11 +125,31 @@ for i in range(len(spike_commit_log)):
                 print("Verilator: VREG - " + str(vreg_commit_log[i][0]) + " Value - " + str(vreg_commit_log[i][1]) +"\n")
                 exitcode = -1
 
+## perform comparison between the floating point commit logs.
+
+print("freg commits " + str(len(freg_commit_log)))
+print("spike f commits " + str(len(spike_float_log)))
+
+if(len(freg_commit_log) != len(spike_float_log)):
+    print("WARNING: FLOATING POINT COMMIT LOG LENGTH MISMATCH")
+    exitcode = -1
+
+
+for i in range(len(spike_float_log)):
+    if i < len(freg_commit_log):
+        #commit at i in each log should match
+        if (spike_float_log[i][0] == freg_commit_log[i][0]) and (spike_float_log[i][1] == freg_commit_log[i][1]):
+            print("Commit " + str(i) + ": FREG - " + str(spike_float_log[i][0]) + " Value - " + str(spike_float_log[i][1]))
+        else:
+            print("\nERROR: Commit " + str(i))
+            print("Spike:     FREG - " + str(spike_float_log[i][0]) + " Value - " + str(spike_float_log[i][1]))
+            print("Verilator: FREG - " + str(freg_commit_log[i][0]) + " Value - " + str(freg_commit_log[i][1]) +"\n")
+            exitcode = -1
+
+
+
+for element in spike_float_log:
+    print(element)
+
 exit(exitcode)
-
-#for element in spike_commit_log:
-#    print(element)
-
-#for element in vreg_commit_log:
-#    print(element)
 
