@@ -19,24 +19,27 @@ message(STATUS "CMake Version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CM
 project(Verilated-Builds LANGUAGES C CXX DESCRIPTION "Environment for Verilating Models")
 find_package(verilator HINTS ${CMAKE_CURRENT_SOURCE_DIR}/../toolchain/verilator)
 
-# See whats going in CMake while getting the build process up and running
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Using C and C++ 11
 set(CMAKE_C_STANDARD 14)
 set(CMAKE_CXX_STANDARD 14)
 
-
-#Currently Supported: rv32im, rv32im_zve32x, rv32imf, rv32imf_zhf, rv32imf_zve32x, rv32imf_zve32f
-set(RISCV_ARCH rv32im CACHE STRING "Specify the configuration")
-
 option(TRACE "Enable minimal VCD trace outputs" OFF)
 option(TRACE_FULL "Enable FULL VCD trace outputs" OFF) #TODO: prevent this option from being cached, force user to always manually enable it
 
-set(VREG_W 128 CACHE STRING "VREG_W")
-set(VMEM_W 32 CACHE STRING "VMEM_W")
-set(MEM_W 32 CACHE STRING "MEM_W")
-set(VLANE_W 32 CACHE STRING "VLANE_W")
+########
+## Import RTL configuration from here instead of command line.
+## File shared with program compliation.
+########
+include(${CMAKE_CURRENT_SOURCE_DIR}/vector_config.cmake)
+set(ENV{VPROC_PIPELINES} ${VPROC_PIPELINES})
+message("Selected VPROC_PIPELINES = ${VPROC_PIPELINES}")
+message("Selected RISCV_ARCH = ${RISCV_ARCH}")
+message("Selected VREG_W = ${VREG_W}")
+message("Selected VMEM_W = ${VMEM_W}")
+set(MEM_W ${VMEM_W})
+message("Selected MEM_W = ${MEM_W}")
 
 set(MEM_SZ 4194304)
 

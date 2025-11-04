@@ -13,14 +13,11 @@ message(STATUS "CMake Version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CM
 #
 ##########################
 
-#Set this on the command line to change configuration.  Currently Supported: rv32im, rv32imzve32x, rv32imf, rv32imfzve32x, rv32imfzve32f
-set(RISCV_ARCH rv32im CACHE STRING "Specify the configuration")
 set(MEM_LATENCY 1 CACHE STRING "Memory latency")
-set(MEM_W 32 CACHE STRING "Width of main memory data port in bits")
-set(VREG_W 128 CACHE STRING "Width of Vector Registers in Bits")
 set(INTEGER 0 CACHE STRING "Variable for ChipsAlliance Tests to build only integer vector tests")
 
 option(TRACE        "Enable trace outputs"                                         OFF)
+option(SPIKE        "Enable Spike Cosim"                                           OFF)
 option(PRINT        "Enable print statements"                                      OFF)
 
 option(LEGACY       "Use Legacy unit tests"                                        OFF)
@@ -41,6 +38,20 @@ set(SPIKE_DIR ${TOOLCHAIN_TOP}/riscv-isa-sim/build/)
 set(SCRIPTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/)
 
 string(REPLACE "/build_tests" "" REPO_TOP ${CMAKE_CURRENT_SOURCE_DIR})
+
+
+########
+## Import RTL configuration from here instead of command line.
+## File shared with program compliation.
+########
+include(${MODEL_DIR}/../vector_config.cmake)
+set(ENV{VPROC_PIPELINES} ${VPROC_PIPELINES})
+message("Selected VPROC_PIPELINES = ${VPROC_PIPELINES}")
+message("Selected RISCV_ARCH = ${RISCV_ARCH}")
+message("Selected VREG_W = ${VREG_W}")
+message("Selected VMEM_W = ${VMEM_W}")
+set(MEM_W ${VMEM_W})
+message("Selected MEM_W = ${MEM_W}")
 
 
 #####

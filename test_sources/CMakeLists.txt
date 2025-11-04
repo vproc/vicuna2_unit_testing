@@ -33,5 +33,9 @@ foreach(item ${files})
     string(REPLACE ".S" "" test_name ${item})
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/riscv-vector-tests/out/v${VREG_W}x32machine/tests/stage2/" "" test_name ${test_name})
     add_unit_test(${test_name})
-    add_unit_test_Spike(${test_name})
+
+    if (SPIKE)
+        add_unit_test_Spike(${test_name})
+    endif()
+    
 endforeach()
