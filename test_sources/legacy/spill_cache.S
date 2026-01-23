@@ -7,7 +7,7 @@
     .balign 4
     .global spill_cache
 spill_cache:
-    jalr            x0, 116(x0) # This code is legacy from old caches.  Not needed, so exit early.  TODO:CV32A60X errors in here somewhere, probably memory bound issues?
+    jalr            x0, 116(x0) # This code is legacy from old caches.  Not needed, so exit early.  TODO:CV32A60X errors in here somewhere
     li              t0, 0x10000
 
     add             a0, a0, t0
