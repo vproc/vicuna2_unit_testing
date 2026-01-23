@@ -13,5 +13,5 @@
 	branch = f_zhf_fixes
 [submodule "rtl/cv32a60x"]
 	path = rtl/cv32a60x
-	url = https://github.com/openhwgroup/cva6.git
+	url = https://github.com/ParkerJones567/cva6.git
 	branch = cv32a60x
