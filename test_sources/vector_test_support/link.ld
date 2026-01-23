@@ -14,6 +14,8 @@ SECTIONS
         *(.vectors)
   } >boot
 
+  ._uart_out : ALIGN(1000) { *(._uart_out) } >boot
+
   .text.init : { *(.text.init) } >ram
   . = ALIGN(0x1000);
   .tohost : { *(.tohost) } >ram

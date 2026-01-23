@@ -25,7 +25,7 @@
 #else
 // Ugly, this currently inlines the correctval in with the code,
 // but this avoids many SLLI/ADDI to generate it from an immediate
-// changed to signal success or failure to high level sim by jumping to user configured exceptions
+// changed to signal success or failure to high level sim by writing to memory mapped address at uart_data
 #define TEST_CASE( testnum, testreg, correctval, code... )	\
 test_ ## testnum: \
     li  TESTNUM, testnum;				   \
@@ -33,14 +33,18 @@ test_ ## testnum: \
     la  x7, test_ ## testnum ## _data;			   \
     load  x7, 0(x7);					   \
     beq testreg, x7, test_ ## testnum ## _success; \
+    la x7, uart_data;\
+    addi x1, x0, 1;\
+    sw x1, 0(x7);\
     la x7, test_ ## testnum ## _success;            \
-    addi x7, x7, 4;                                  \
-    jalr x0, 120(x0);                                 \
+    addi x7, x7, 12;                                  \
+    jr x7;                                 \
 .align 3;					   \
 test_ ## testnum ## _data:			   \
    .quad MASK_XLEN(correctval);			   \
 test_ ## testnum ## _success: \
-     jalr x1, 124(x0);
+    la x7, uart_data;         \
+    sw x0, 0(x7);             
 #endif
 
 # We use a macro hack to simpify code generation for various numbers

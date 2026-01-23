@@ -74,9 +74,6 @@
 #endif
 
 #define INIT_XREG                                                       \
-addi x0, x0, 0; \
-addi x0, x0, 0; \
-addi x0, x0, 0; \
   li x1, 0;                                                             \
   li x2, 0;                                                             \
   li x3, 0;                                                             \
@@ -107,9 +104,7 @@ addi x0, x0, 0; \
   li x28, 0;                                                            \
   li x29, 0;                                                            \
   li x30, 0;                                                            \
-  li x31, 0;  \
-  addi x0, x0, 0; \
-  addi x0, x0, 0;
+  li x31, 0;
 
 #define INIT_PMP                                                        \
   la t0, 1f;                                                            \
@@ -123,25 +118,9 @@ addi x0, x0, 0; \
 1:
 
 #define INIT_RNMI                                                       \
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
   la t0, 1f;                                                            \
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
- / csrw mtvec, t0;                                                       \
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
+  csrw mtvec, t0;                                                       \
 /*csrwi CSR_MNSTATUS, MNSTATUS_NMIE;                                    \*/
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
-  addi x0, x0, 0; \
   .align 2;                                                             \
 1:
 
