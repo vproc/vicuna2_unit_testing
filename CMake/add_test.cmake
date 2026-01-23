@@ -161,7 +161,7 @@ macro(add_legacy_test TEST_NAME)
              WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
     message(STATUS "Successfully added Legacy Test ${folder}-${TEST_NAME}")
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
+    set_tests_properties(${folder}-${TEST_NAME} PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
 
 endmacro()
 
