@@ -30,10 +30,11 @@ macro(add_unit_test TEST_NAME)
                        COMMAND srec_cat ${TEST_NAME}.bin -binary -offset 0x0000 -byte-swap 4 -o ${TEST_NAME}.vmem -vmem
                        COMMAND rm -f prog_${TEST_NAME}.txt
                        COMMAND echo -n "${BUILD_DIR}/vector-tests/${TEST_NAME}.vmem" > prog_${TEST_NAME}.txt
-                       #COMMAND ${CMAKE_OBJDUMP} -D ${TEST_NAME}.elf > ${TEST_NAME}_dump.txt
+                       COMMAND ${CMAKE_OBJDUMP} -D ${TEST_NAME}.elf > ${TEST_NAME}_dump.txt
                        )
-    
-     
+
+    execute_process(COMMAND python3 ${SCRIPTS_DIR}/count_test_cases.py ${TEST_SOURCES}/riscv-vector-tests/out/v${VREG_W}x32machine/tests/stage2/${TEST_NAME}.S
+                    OUTPUT_VARIABLE TEST_CASE_NUM)
     #If trace option is selected, provide the paths for the .vcd trace files.          
     if(TRACE)
         set(VCD_TRACE_ARGS "${BUILD_DIR}/Testing/last_test_sig.vcd")
@@ -44,10 +45,11 @@ macro(add_unit_test TEST_NAME)
 
     #Add Test
     add_test(NAME ${TEST_NAME}
-             COMMAND ${MODEL_DIR}/verilated_model ${BUILD_DIR}/vector-tests/prog_${TEST_NAME}.txt 32 4194304 1 1 ${TEST_NAME} ${VREG_W} ${VCD_TRACE_ARGS}
+             COMMAND ${MODEL_DIR}/verilated_model ${BUILD_DIR}/vector-tests/prog_${TEST_NAME}.txt 32 4194304 ${MEM_LATENCY} 1 ${TEST_NAME} ${VREG_W} ${TEST_CASE_NUM} ${VCD_TRACE_ARGS}
              WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
     message(STATUS "Successfully added ${TEST_NAME}")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
 
 endmacro()
 
@@ -91,6 +93,7 @@ macro(add_unit_test_Spike TEST_NAME)
     set_tests_properties(${TEST_NAME}_Spike PROPERTIES DEPENDS "${TEST_NAME}")
 
     message(STATUS "Successfully added ${TEST_NAME}_Spike")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
 
 endmacro()
 
@@ -158,6 +161,7 @@ macro(add_legacy_test TEST_NAME)
              WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
     message(STATUS "Successfully added Legacy Test ${folder}-${TEST_NAME}")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
 
 endmacro()
 
