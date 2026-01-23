@@ -59,10 +59,12 @@ module vproc_top
     output logic               mem_req_o,
     output logic [31:0]        mem_addr_o,
     output logic               mem_we_o,
+    output logic               mem_src_o,
     output logic [MEM_W/8-1:0] mem_be_o,
     output logic [MEM_W  -1:0] mem_wdata_o,
     input  logic               mem_rvalid_i,
     input  logic               mem_err_i,
+    input  logic               mem_src_i,
     input  logic [MEM_W  -1:0] mem_rdata_i,
 
     output logic               data_read_o,
@@ -75,7 +77,9 @@ module vproc_top
     input  logic               mem_ierr_i,
     input  logic [32  -1:0]    mem_irdata_i,
 
-    output logic               data_iread_o
+    output logic               data_iread_o,
+
+    output logic flush_o
     //////////////////////////////////////////
 );
 
@@ -120,15 +124,16 @@ module vproc_top
       .cvxif_req_o(cvxif_req_o),
       .cvxif_resp_i(cvxif_resp_i),
 
-      .obi_fetch_req_o   (obi_fetch_req),
-      .obi_fetch_rsp_i   (obi_fetch_rsp),
-
+      .obi_fetch_req_o(obi_fetch_req),
+      .obi_fetch_rsp_i(obi_fetch_rsp),
+      
       .obi_store_req_o  (obi_store_req),
       .obi_store_rsp_i  (obi_store_rsp),
 
       .obi_load_req_o   (obi_load_req),
-      .obi_load_rsp_i   (obi_load_rsp)
-
+      .obi_load_rsp_i   (obi_load_rsp),
+      
+      .flush_o (flush_o)
   );
 
   // -------------------
@@ -270,6 +275,10 @@ assign result_ready_test = cvxif_req_o.result_ready;
 assign result_valid_test = cvxif_resp_i.result_valid;
 logic [31:0] issue_id_test;
 assign issue_id_test=cvxif_req_o.issue_req.id;
+logic [31:0] issue_instr;
+assign issue_instr = cvxif_req_o.issue_req.instr;
+logic [31:0] result_id_test;
+assign result_id_test=cvxif_resp_i.result.id;
 
 
 
@@ -278,7 +287,7 @@ assign issue_id_test=cvxif_req_o.issue_req.id;
 
 
   /////////
-  // Connect OBI Signals to expected VPROC_OUT interface.  TODO: Make this an OBI interface
+  // Connect OBI Signals to expected VPROC_OUT interface.  TODO: Make vicaun side an OBI interface
   ////////
 
   //######Connect instruction memory obi signals######
@@ -321,15 +330,49 @@ always_comb begin
   obi_load_rsp.rvalid = mem_rvalid_i;
   obi_load_rsp.r.err = mem_err_i;
   obi_load_rsp.r.rid = '0; //ID? -> hart ID, hard code to 0 since only one hart in system
+
+  //mem_req source tracking.  Without vector unit, src unused but set for completeness
+  mem_src_o = 1'b0;
 end
 `else
 //TODO Arbitration with vector unit included.  Preference given Vector > Scalar Store > Scalar Load
+//CV32A60X does not stall scalar LSU for vector stores, can lead to non-serialized accesses.
+//Current solution is to keep track of offloaded Loads/Stores and reserve the memory port until the vector load/store is resolved.
+//TODO: Improve this with a more intelligent memory system (ie write buffer), as this current setup leads to unnecessary stalling
+logic [4:0] outstanding_vlsu_id;
+logic no_outstanding_vlsu;
+
+//assign no_outstanding_vlsu = 1'b1;
+
+ fifo_v3 #(
+    .FALL_THROUGH (1'b0        ), //no fall through mode? cant push and pop a memory transaction in the same cycle by design
+    .dtype        (logic [4:0]),
+    .DEPTH        (10           )   //What is the maximum depth?
+  ) next_vlsu_id_fifo (
+    .clk_i      (clk_i),
+    .rst_ni     (rst_ni),
+    .flush_i    (1'b0                    ),   //No need to flush because CV32A60X only offloads non-speculative instructions
+    .data_i     (vcore_xif.issue_req.id), //Push ID of this instruction
+    .push_i     (vcore_xif.issue_ready & vcore_xif.issue_valid & vcore_xif.issue_resp.loadstore), //push if a valid LSU instruction is offloaded
+    .data_o     (outstanding_vlsu_id),
+    .empty_o    (no_outstanding_vlsu),
+    .pop_i      (vcore_xif.result_valid & vcore_xif.result_ready & (vcore_xif.result.id == outstanding_vlsu_id) & !no_outstanding_vlsu) //Add empty check in case id 0 is result signalled while fifo is empty
+    //.pop_i      (vcore_xif.result_valid & vcore_xif.result_ready & !no_outstanding_vlsu)
+  );
+logic test_store_req;
+logic [31:0] test_store_addr;
+assign test_store_req = obi_store_req.req;
+assign test_store_addr = obi_store_req.a.addr;
+
+logic test_load_req;
+assign test_load_req = obi_load_req.req;
 always_comb begin
   mem_req_o = obi_load_req.req || obi_store_req.req || vcore_xif.mem_valid;
 
-  obi_load_rsp.gnt = !obi_store_req.req && !vcore_xif.mem_valid;
-  obi_store_rsp.gnt = !vcore_xif.mem_valid;
+  obi_load_rsp.gnt = !obi_store_req.req && !vcore_xif.mem_valid && no_outstanding_vlsu; //only grant cv32a60x the memory interface when no vector loads or stores are outstanding
+  obi_store_rsp.gnt = !vcore_xif.mem_valid && no_outstanding_vlsu; //only grant cv32a60x the memory interface when no vector loads or stores are outstanding
   vcore_xif.mem_ready = 1'b1;
+  mem_src_o = 1'b1; //default to vector unit source
 
   //default to vector interface for writes
   mem_addr_o = vcore_xif.mem_req.addr;
@@ -337,25 +380,35 @@ always_comb begin
   mem_we_o = vcore_xif.mem_req.we & vcore_xif.mem_valid;
   mem_be_o = vcore_xif.mem_req.be; 
 
-  if (obi_store_req.req && !vcore_xif.mem_valid) begin
+  if (obi_store_req.req && !vcore_xif.mem_valid && no_outstanding_vlsu) begin
       //if vector unit not using memory interface and a valid scalar store
       mem_addr_o = obi_store_req.a.addr;
       mem_wdata_o = obi_store_req.a.wdata; 
       mem_we_o = obi_store_req.a.we & obi_store_req.req;
       mem_be_o = obi_store_req.a.be; //does loading half-words change this?
-  end else if (obi_load_req.req && !obi_store_req.req && !vcore_xif.mem_valid)begin 
+      mem_src_o = 1'b0; //Scalar source (Store so this signal not required, but here for completeness)
+  end else if (obi_load_req.req && !obi_store_req.req && !vcore_xif.mem_valid && no_outstanding_vlsu)begin 
       //if vector unit not using memory interface and a valid scalar load
       mem_addr_o = obi_load_req.a.addr;
+      mem_src_o = 1'b0; //Scalar source
+      mem_wdata_o = '0; 
+      mem_we_o = '0;
+      mem_be_o = '0; //does loading half-words change this?
 
   end
-  //only load uses the r interface.  can broadcast load to vector and scalar core? TODO: what happens if scalar load issued immediately after vector load?  might need to keep track of request sources or reserve port completely once vector transaction begins
-
+  //arbitrate rvalid based on source of request
+  vcore_xif.mem_result_valid = 1'b0;
+  obi_load_rsp.rvalid = 1'b0;
+  if (mem_src_i) begin
+    vcore_xif.mem_result_valid = mem_rvalid_i;
+  end else begin
+    obi_load_rsp.rvalid = mem_rvalid_i;
+  end
+  //only scalar load uses the r interface.
   obi_load_rsp.r.rdata = mem_rdata_i;
-  obi_load_rsp.rvalid = mem_rvalid_i;
   obi_load_rsp.r.err = mem_err_i;
   obi_load_rsp.r.rid = '0; //ID? -> hart ID, hard code to 0 since only one hart in system
 
-  vcore_xif.mem_result_valid = mem_rvalid_i;
   vcore_xif.mem_result.rdata = mem_rdata_i;
   vcore_xif.mem_result.err = mem_err_i;
 end

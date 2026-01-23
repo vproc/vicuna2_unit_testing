@@ -9,8 +9,8 @@
 
 #include "Vvproc_top.h"
 #include "Vvproc_top_vproc_top.h"
-#include "Vvproc_top_cva6_pipeline__Cz1_TCz2.h"
-#include "Vvproc_top_frontend__pi1.h"
+//#include "Vvproc_top_cva6_pipeline__Cz1_TCz2.h"
+//#include "Vvproc_top_frontend__pi1.h"
 
 //#include "Vvproc_top_vproc_top.h" --cv32e40x specific?
 //#include "Vvproc_top_cv32e40x_core__pi1.h" --cv32e40x specific?
@@ -79,6 +79,8 @@ bool check_PC(Vvproc_top *top, uint32_t address); //TODO:CVA6 Variant
 */
 void advance_cycle(Vvproc_top *top);
 
+void advance_cycle_half(Vvproc_top *top, bool val);
+
 /*
 *   Function to read from memory and manage/update memory buffers.  Generalized to work on byte pointers for variable width interfaces.
 *   Queues of correct sizes are expected to be allocated and provided by the user.
@@ -99,7 +101,7 @@ void advance_cycle(Vvproc_top *top);
 *
 *   *mem           - pointer to memory space
 */
-void update_mem_load(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t mem_lat, uint32_t mem_size, unsigned char *model_data_i, bool *model_valid_i, bool *model_err_i, unsigned char **queue_data, bool *queue_valid, bool *queue_err, unsigned char *mem);
+void update_mem_load(Vvproc_top *top, uint32_t address, bool req_valid, bool req_src, bool req_write, uint32_t mem_w, uint32_t mem_lat, uint32_t mem_size, unsigned char *model_data_i, bool *model_valid_i, bool *model_err_i, bool *model_src_i, unsigned char **queue_data, bool *queue_valid, bool **queue_meta, unsigned char *mem);
 
 /*
 *   Function to write to memory.  Generalized to work on byte pointers for variable width interfaces.
@@ -115,7 +117,7 @@ void update_mem_load(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t 
 *
 *   *mem           - pointer to memory space
 */
-void update_mem_write(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t mem_size, unsigned char *model_data_o, unsigned char *model_be_o, unsigned char *mem);
+void update_mem_write(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t mem_lat, uint32_t mem_size, unsigned char *model_data_o, unsigned char *model_be_o, bool *queue_valid, unsigned char *mem);
 
 /*
 * Check for a write to memory mapped io.  Returns true and copies written data to *data_out if a valid write occurs to the selected address
