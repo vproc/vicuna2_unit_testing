@@ -369,6 +369,10 @@ if(FORCE_ALIGNED_READS)
     set(READ_MODE -DFORCE_ALIGNED_READS)
 endif()
 
+if(${SCALAR_CORE} STREQUAL "cv32a60x")
+    set(COMMIT_AND_ISSUE -DCOMMIT_AND_ISSUE)
+endif()
+
 #Create the verilated model 
 add_executable(verilated_model)
 
@@ -413,8 +417,8 @@ if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
                                 -CFLAGS "-std=gnu++14 -O2")
 
 elseif( ${SCALAR_CORE} STREQUAL "cv32a60x" ) #TODO: Verify/Test support for floating point vector systems with this core.  Currently, only Zve32x tested.
-    verilate(verilated_model SOURCES  ${CV32A60X_SOURCE} ${VICUNA_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/vproc_top.sv
-                INCLUDE_DIRS  ${CV32A60X_INCLUDE} ${VICUNA_INCS} ${CMAKE_CURRENT_SOURCE_DIR}
+    verilate(verilated_model SOURCES ${CV32A60X_SOURCE} ${VICUNA_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/vproc_top.sv
+                INCLUDE_DIRS ${CV32A60X_INCLUDE} ${VICUNA_INCS} ${CMAKE_CURRENT_SOURCE_DIR}
                 TOP_MODULE vproc_top 
                 PREFIX Vvproc_top
                 ${TRACE}                                    
@@ -440,6 +444,7 @@ elseif( ${SCALAR_CORE} STREQUAL "cv32a60x" ) #TODO: Verify/Test support for floa
                                 ${RISCV_ZVE32X}
                                 ${RISCV_ZVE32F}
                                 ${RISCV_ZVFH}
+                                ${COMMIT_AND_ISSUE}
                                 -CFLAGS "-std=gnu++14 -O2")
 else()
     message(FATAL_ERROR "Unsupported Scalar Core Selected")
