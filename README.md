@@ -9,8 +9,8 @@ The first is under '_/build_model_'.  This project builds the verilator model to
 
 Currently two scalar cores are supported:
 <ul>
-  <li>[CV32E40X](http://example.com)</li>
-  <li>[CV32A60X](http://example.com)</li>
+  <li>[CV32E40X](https://github.com/openhwgroup/cv32e40x)</li>
+  <li>[CV32A60X](https://github.com/openhwgroup/cva6/tree/cv32a60x)</li>
 </ul> 
 As the interfaces for each core is different, a folder containing the core specific integration _vproc_top.sv_ and _verilator_main.cpp_ are present in the _/build_model_ folder.  Additionally, some core specific simulation functions have been added, and are included in the built model.
 
@@ -32,7 +32,7 @@ The second CMake project is located in the '_/build_tests_' folder.  All test so
 Two types of unit tests are currently supported in this repository.
 <ul>
   <li>**Legacy Tests** - these are the original handwritten unit tests used for Vicuna1.0, along with additional tests written in this style for floating point operations</li>
-  <li>**ChipsAlliance Vector Tests** - these are generated using the generator from ChipsAlliance under the [riscv-vector-tests]([http://example.com](https://github.com/chipsalliance/riscv-vector-tests) repo</li>
+  <li>**ChipsAlliance Vector Tests** - these are generated using the generator from ChipsAlliance under the [riscv-vector-tests](https://github.com/chipsalliance/riscv-vector-tests) repo</li>
 </ul> 
 
 The type of test compiled and run can be changed with the flag _-DLegacy=ON_.  The default is to run the ChipsAlliance tests.
