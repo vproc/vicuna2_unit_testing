@@ -55,8 +55,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    fprintf(stderr, "MEM_LAT = %d\n", mem_latency);
-
     Verilated::traceEverOn(true);
     //Verilated::commandArgs(argc, argv);
 
@@ -232,7 +230,7 @@ int main(int argc, char **argv) {
 
         //Update write interface
         update_mem_write(top->mem_addr_o, (top->mem_req_o && top->mem_we_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_wdata_o), (unsigned char*)&(top->mem_be_o), mem_rvalid_queue, mem);
-        //Update read interface TODO: RETURN THIS TO mem_latency
+        //Update read interface
         update_mem_load(top, top->mem_addr_o, (top->mem_req_o && !top->mem_we_o), top->mem_we_o, (top->mem_src_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_rdata_i), (bool*)&(top->mem_rvalid_i), (bool*)&(top->mem_err_i), (bool*)&(top->mem_src_i), mem_rdata_queue, mem_rvalid_queue, mem_meta_queue, mem);
         //Update instruction memory interface.  Never a write here and always from source 0 (main core)
         update_mem_load(top, top->mem_iaddr_o, top->mem_ireq_o, false, false, 32, mem_latency, mem_sz, (unsigned char*)&(top->mem_irdata_i), (bool*)&(top->mem_irvalid_i), (bool*)&(top->mem_ierr_i), NULL, mem_idata_queue, mem_ivalid_queue, mem_imeta_queue, mem);
