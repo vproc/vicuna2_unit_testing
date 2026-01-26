@@ -225,12 +225,11 @@ set(CV32A60X_SOURCE ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncD
                     ${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
                     ${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
                     ${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
-                    
+
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/cf_math_pkg.sv #packages
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_pkg.sv
                     ${CVA6_REPO_DIR}/core/include/config_pkg.sv
-                    ${CVA6_REPO_DIR}/core/include/cv32a60x_config_pkg.sv   #TODO: What are different configs? (cv32a65x? + others without X)
-                    #${CVA6_REPO_DIR}/core/include/cv64a6_imafdc_sv39_config_pkg.sv   #TODO: What are different configs? (cv32a65x? + others without X)
+                    ${CVA6_REPO_DIR}/core/include/cv32a60x_config_pkg.sv
                     ${CVA6_REPO_DIR}/core/include/riscv_pkg.sv
 
                     ${DESIGN_RTL_DIR_CV32E40X}/include/cv32e40x_pkg.sv  #VPROC VDIV has a dependency on this package  TODO: REMOVE IT
@@ -253,7 +252,7 @@ set(CV32A60X_SOURCE ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncD
                     ${CVA6_REPO_DIR}/core/cvxif_example/compressed_instr_decoder.sv
                     ${CVA6_REPO_DIR}/core/cvxif_example/copro_alu.sv
 
-                    ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/fifo_v3.sv   #Common Cells
+                    #${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/fifo_v3.sv   #Common Cells Included in Vicuna
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lfsr.sv
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lfsr_8bit.sv
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/stream_arbiter.sv
@@ -317,7 +316,7 @@ set(CV32A60X_SOURCE ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncD
                     ${CVA6_REPO_DIR}/core/cva6_fifo_v3.sv
 
                     
-                    ${CVA6_REPO_DIR}/core/frontend/btb.sv   #what is frontend? (comment from original Flist.cva6)
+                    ${CVA6_REPO_DIR}/core/frontend/btb.sv
                     ${CVA6_REPO_DIR}/core/frontend/bht.sv
                     ${CVA6_REPO_DIR}/core/frontend/ras.sv
                     ${CVA6_REPO_DIR}/core/frontend/instr_scan.sv
@@ -332,8 +331,8 @@ set(CV32A60X_SOURCE ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncD
 
 set(CV32A60X_INCLUDE ${CVA6_REPO_DIR}/core/include/
                      ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/include/
-                     ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/include/
-                     ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/
+                     #${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/include/ #included in Vicuna repo
+                     #${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/     #
                      ${CVA6_REPO_DIR}/vendor/pulp-platform/axi/include/
                      ${CVA6_REPO_DIR}/common/local/util/
                      ${HPDCACHE_DIR}/rtl/include)
