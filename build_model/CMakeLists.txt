@@ -386,12 +386,12 @@ target_sources(verilated_model PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/verilator_main.cpp)
 
 if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
-    verilate(verilated_model SOURCES  ${CV32E40X_SOURCE} ${VICUNA_SRCS} ${FPU_SS_SOURCE} ${CV32A60X_SOURCE} ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/vproc_top.sv
-                INCLUDE_DIRS  ${CV32E40X_INCLUDE} ${VICUNA_INCS} ${FPU_SS_INCLUDE} ${CV32A60X_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR}
+    verilate(verilated_model SOURCES  ${CV32E40X_SOURCE} ${VICUNA_FPU_SRCS} ${VICUNA_SRCS} ${FPU_SS_SOURCE} ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/vproc_top.sv
+                INCLUDE_DIRS  ${CV32E40X_INCLUDE} ${VICUNA_FPU_INCS} ${VICUNA_INCS} ${FPU_SS_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR}
                 TOP_MODULE vproc_top 
                 PREFIX Vvproc_top
                 ${TRACE}                                    
-                VERILATOR_ARGS -cc -exe verilator_main.cpp --unroll-count 1024
+                VERILATOR_ARGS -cc -exe ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/verilator_main.cpp --unroll-count 1024
                                 -Wno-WIDTH -Wno-PINMISSING -Wno-UNOPTFLAT   
                                 -Wno-UNSIGNED -Wno-IMPLICIT -Wno-LITENDIAN -Wno-CASEINCOMPLETE        
                                 -Wno-SYMRSVDWORD -Wno-BLKANDNBLK -Wno-BLKSEQ -Wno-SYNCASYNCNET        
@@ -401,7 +401,6 @@ if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
                                 -Wno-SELRANGE -Wno-LATCH #These might be caused from not connecting everything properly
                                 -Wno-IMPLICITSTATIC      
                                 #+define+COREV_ASSERT_OFF       #Fixes UVM error with CV32E40X (Needed when not using -DVPROC_SVA)
-                                --clk clk_i
                                 ${TRACE_FLAG} 
                                 --assert -DVPROC_SVA
                                 -GMEM_W=${MEM_W} -GVMEM_W=${VMEM_W}
