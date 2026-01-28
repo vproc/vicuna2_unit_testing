@@ -73,11 +73,11 @@ module vproc_top
 
     output logic               mem_ireq_o,
     output logic [31:0]        mem_iaddr_o,
+    output logic               mem_iid_o,
     input  logic               mem_irvalid_i,
     input  logic               mem_ierr_i,
     input  logic [32  -1:0]    mem_irdata_i,
-
-    output logic               data_iread_o,
+    input  logic               mem_iid_i,
 
     output logic flush_o
     //////////////////////////////////////////
@@ -293,12 +293,14 @@ assign result_id_test=cvxif_resp_i.result.id;
   //######Connect instruction memory obi signals######
   assign mem_ireq_o = obi_fetch_req.req;
   assign mem_iaddr_o = obi_fetch_req.a.addr;
+  assign mem_iid_o = obi_fetch_req.a.aid;
   //parity bits?
   assign obi_fetch_rsp.r.rdata = mem_irdata_i;
   assign obi_fetch_rsp.rvalid = mem_irvalid_i;
   assign obi_fetch_rsp.r.err = mem_ierr_i;
-  assign obi_fetch_rsp.r.rid = '0; //ID? -> hart ID, hard code to 0 since only one hart in system
+  assign obi_fetch_rsp.r.rid = mem_iid_i; //ID used by CVA6 to managed index in instruction buffer.  TODO: Rework this, CVA6 frontend should keep track of its own order of imem requests (in fifo?).  CURRENT SETUP ONLY SUPPORTS FETCHBUFFER SIZE OF 2
   assign obi_fetch_rsp.gnt = 1'b1; //instruction memory always ready
+  
 
 
   //######Connect data memory obi signals######
