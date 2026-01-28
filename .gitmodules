@@ -1,6 +1,7 @@
 [submodule "test_sources/riscv-vector-tests"]
 	path = test_sources/riscv-vector-tests
 	url = https://github.com/chipsalliance/riscv-vector-tests.git
+	ignore = dirty
 [submodule "rtl/vicuna2_core"]
 	path = rtl/vicuna2_core
 	url = https://github.com/vproc/vicuna2_core.git
