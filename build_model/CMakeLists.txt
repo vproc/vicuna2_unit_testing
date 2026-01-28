@@ -375,11 +375,6 @@ endif()
 #Create the verilated model 
 add_executable(verilated_model)
 
-
-# target_include_directories(verilated_model PRIVATE
-#     ${CMAKE_CURRENT_SOURCE_DIR}
-#     ${VICUNA_TOP_DIR})
-
 target_sources(verilated_model PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/verilator_support_${SCALAR_CORE}.h
     ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/verilator_support_${SCALAR_CORE}.cpp
