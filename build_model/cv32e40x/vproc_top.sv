@@ -21,17 +21,13 @@ module vproc_top import vproc_pkg::*; #(
         input  logic               mem_err_i,
         input  logic [MEM_W  -1:0] mem_rdata_i,
 
-        output logic               data_read_o,
-
         output logic [31:0]        pend_vreg_wr_map_o,
 
         output logic               mem_ireq_o,
         output logic [31:0]        mem_iaddr_o,
         input  logic               mem_irvalid_i,
         input  logic               mem_ierr_i,
-        input  logic [32  -1:0]    mem_irdata_i,
-
-        output logic               data_iread_o
+        input  logic [32  -1:0]    mem_irdata_i
               
     );
 
@@ -893,7 +889,7 @@ module vproc_top import vproc_pkg::*; #(
 
     assign dmem_req    = data_req;
     assign dmem_addr   = data_addr;
-    assign dmem_we     = data_we;
+    assign dmem_we     = data_we && mem_req_o;
     assign dmem_be     = data_be;
     assign dmem_wdata  = data_wdata;
     assign data_gnt    = dmem_gnt;

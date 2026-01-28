@@ -217,8 +217,8 @@ int main(int argc, char **argv) {
         //////////////////////////
 
         //Update write interface
-        update_mem_write(top->mem_addr_o, (top->mem_req_o && top->mem_we_o), mem_w, mem_sz, (unsigned char*)&(top->mem_wdata_o), (unsigned char*)&(top->mem_be_o), mem);
-        //Update read interface TODO - STALL IF (top->mem_req_o && !top->mem_we_o).  Original Vicuna also did not contain this condition  TODO: MEM_REQ_VALID NEEDS TO BE SIGNALLED
+        update_mem_write(top->mem_addr_o, (top->mem_req_o && top->mem_we_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_wdata_o), (unsigned char*)&(top->mem_be_o), mem_rvalid_queue, mem);
+        //Update read interface TODO - STALL IF (top->mem_req_o && !top->mem_we_o).  Original Vicuna also did not contain this condition  TODO: MEM_REQ_VALID NEEDS TO BE SIGNALLED for writes
         update_mem_load(top->mem_addr_o, (top->mem_req_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_rdata_i), (bool*)&(top->mem_rvalid_i), (bool*)&(top->mem_err_i), mem_rdata_queue, mem_rvalid_queue, mem_err_queue, mem);
 
         //Update instruction memory interface
