@@ -1,6 +1,7 @@
 [submodule "test_sources/riscv-vector-tests"]
 	path = test_sources/riscv-vector-tests
 	url = https://github.com/chipsalliance/riscv-vector-tests.git
+	ignore = dirty
 [submodule "rtl/vicuna2_core"]
 	path = rtl/vicuna2_core
 	url = https://github.com/vproc/vicuna2_core.git
@@ -11,3 +12,7 @@
 	path = rtl/cv32e40x
 	url = https://github.com/ParkerJones567/cv32e40x_f_zhf.git
 	branch = f_zhf_fixes
+[submodule "rtl/cv32a60x"]
+	path = rtl/cv32a60x
+	url = https://github.com/ParkerJones567/cva6.git
+	branch = cv32a60x

@@ -6,16 +6,26 @@
     .section .vectors, "ax", @progbits
     .option norvc;
 
-    # redirect all interrupts to the execption wrapper
-    .rept 29
+    # redirect all interrupts to the execption wrapper (Should be caught by simulation and exit)
+    .rept 28
     nop
     .endr
+    j 0x00000070
     nop
-    jalr x0, 0(x7)                # failed tests jump here.  Return to execution after success signal (stored in x7)
-    ret                           # successful tests jump here.  Return to execution
+    nop
+    nop
     # the reset vector is redirected to _start
     j _start
 
 
 
-    .section .text
+#test success/failure uses UART
+    .section ._uart_out, "ax", @progbits
+    .option norvc;
+    .global uart_data
+    .global uart_status
+uart_data:
+    .word           0x00000000
+uart_status:  #no uart recieve currently supported, and uart write is always valid
+    .word           0x00000000
+
