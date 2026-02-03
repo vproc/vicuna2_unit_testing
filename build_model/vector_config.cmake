@@ -6,8 +6,10 @@
 set(RISCV_ARCH rv32im_zve32x CACHE STRING "Specify the configuration")
 
 #Currently Supported: cv32e40x, cv32a60x
-set(SCALAR_CORE "cv32a60x")
+set(SCALAR_CORE "cv32e40x")
 
-set(VPROC_PIPELINES "${VMEM_W}:VLSU 32:VELEM,VSLD,VDIV,VALU,VMUL")
-set(VREG_W 128)
+
 set(VMEM_W 32)
+set(VREG_W 128)
+set(VPROC_PIPELINES "${VMEM_W}:VLSU 32:VELEM,VSLD,VDIV,VALU,VMUL")
+
