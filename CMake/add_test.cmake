@@ -108,7 +108,7 @@ endmacro()
 macro(add_legacy_test TEST_NAME)
 
 
-    string(REPLACE "${SPILL_CACHE_PATH}/" "" folder ${CMAKE_CURRENT_SOURCE_DIR})
+    string(REPLACE "${LEGACY_DIR}/" "" folder ${CMAKE_CURRENT_SOURCE_DIR})
 
     add_executable(${folder}-${TEST_NAME})
 
@@ -118,7 +118,7 @@ macro(add_legacy_test TEST_NAME)
 
     target_sources(${folder}-${TEST_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}.S
-        ${SPILL_CACHE_PATH}/spill_cache.S
+        ${LEGACY_DIR}/bsp/spill_cache.S
     )
 
     string(REPLACE "${REPO_TOP}/test_sources" "${BUILD_DIR}" TEST_BUILD_PATH ${CMAKE_CURRENT_SOURCE_DIR})
@@ -126,7 +126,7 @@ macro(add_legacy_test TEST_NAME)
     #Set Linker
     target_link_options(${folder}-${TEST_NAME} PRIVATE "-nostartfiles")
     target_link_options(${folder}-${TEST_NAME} PRIVATE "-nostdlib")
-    target_link_options(${folder}-${TEST_NAME} PRIVATE "-T${SPILL_CACHE_PATH}/link.ld")
+    target_link_options(${folder}-${TEST_NAME} PRIVATE "-T${LEGACY_DIR}/bsp/link.ld")
 
     #Link BSP
     target_link_libraries(${folder}-${TEST_NAME} PRIVATE bsp_Vicuna)
@@ -162,6 +162,47 @@ macro(add_legacy_test TEST_NAME)
 
     message(STATUS "Successfully added Legacy Test ${folder}-${TEST_NAME}")
     set_tests_properties(${folder}-${TEST_NAME} PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
+
+endmacro()
+
+
+
+#######
+# Macro for adding a Legacy test to spike
+#######
+macro(add_legacy_test_Spike TEST_NAME)
+
+    string(REPLACE "${LEGACY_DIR}/" "" folder ${CMAKE_CURRENT_SOURCE_DIR})
+    add_executable(${folder}-${TEST_NAME}-Spike)
+
+    target_include_directories(${folder}-${TEST_NAME}-Spike PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+    target_sources(${folder}-${TEST_NAME}-Spike PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}.S
+        ${LEGACY_DIR}/bsp/spike_bsp/spill_cache_Spike.S
+        ${LEGACY_DIR}/bsp/spike_bsp/crt0_Spike.S
+    ) 
+
+    #Set Linker
+    target_link_options(${folder}-${TEST_NAME}-Spike PRIVATE "-nostartfiles")
+    target_link_options(${folder}-${TEST_NAME}-Spike PRIVATE "-nostdlib")
+    target_link_options(${folder}-${TEST_NAME}-Spike PRIVATE "-T${LEGACY_DIR}/bsp/spike_bsp/link_spike.ld")
+
+    add_custom_command(TARGET ${folder}-${TEST_NAME}-Spike
+                       POST_BUILD
+                       COMMAND ${CMAKE_OBJDUMP} -D ${folder}-${TEST_NAME}-Spike.elf > ${folder}-${TEST_NAME}-Spike_dump.txt
+                       )
+	              
+
+    #Add Test
+    add_test(NAME ${folder}-${TEST_NAME}-Spike
+             COMMAND ${SPIKE_DIR}/spike --isa=rv32imf_zicntr_zihpm_zfh_zve32f_zvfh_zvl${VREG_W}b ${BUILD_DIR}/legacy/${folder}/${folder}-${TEST_NAME}-Spike.elf   
+             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+    message(STATUS "Successfully added Legacy Test ${folder}-${TEST_NAME}-Spike")
+    set_tests_properties(${folder}-${TEST_NAME}-Spike PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
 
 endmacro()
 
