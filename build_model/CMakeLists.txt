@@ -112,6 +112,16 @@ elseif(${RISCV_ARCH} STREQUAL "rv32imf_zfh_zve32f_zvfh") #Build CV32E40X with Vi
     add_definitions(-DRISCV_ZVE32F)
     add_definitions(-DRISCV_ZVFH)
 
+elseif(${RISCV_ARCH} STREQUAL "rv32im_zve32x_zvbb_zvbc") #Build CV32E40X with Vicuna (+ crypto Extension) on the Xif interface
+    set(XIF_FLAG "-DXIF_ON" )
+    set(RISCV_F "" )
+    set(RISCV_ZFH "" )
+    set(RISCV_ZVE32X "-DRISCV_ZVE32X" )
+    set(RISCV_ZVE32F "" )
+    set(RISCV_ZVFH "" )
+    #C++ Flags
+    add_definitions(-DRISCV_ZVE32X)
+
 else()
     message(FATAL_ERROR "Unsupported RISCV_ARCH selected")
 

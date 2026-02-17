@@ -64,6 +64,8 @@ option(RISCV_ZFH "Use the RISC-V ZFH Extension" OFF)
 option(RISCV_ZVE32X "Use the RISC-V Embedded V Extension" OFF)
 option(RISCV_ZVE32F "Use the RISC-V Embedded V Float Extension" OFF)
 option(RISCV_ZVFH "Use the RISC-V V Half Float Extension" OFF)
+option(RISCV_ZVBB "Use the RISC-V V Basic Bit-manipulation" OFF)
+option(RISCV_ZVBC "Use the RISC-V V Carryless Multiplication" OFF)
 
 if(${RISCV_ARCH} STREQUAL "rv32im") 
     set(RISCV_ABI ilp32)
@@ -96,6 +98,13 @@ elseif(${RISCV_ARCH} STREQUAL "rv32imf_zfh_zve32f_zvfh")
     set(RISCV_ZFH ON)
     set(RISCV_F ON)
     set(RISCV_ZVFH ON)
+
+elseif(${RISCV_ARCH} STREQUAL "rv32im_zve32x_zvbb_zvbc")
+    set(RISCV_ABI ilp32) 
+    set(RISCV_ZVE32X ON)
+    set(RISCV_ZVBB ON)
+    set(RISCV_ZVBC ON)
+    set(INTEGER 1)
     
 
 else()
