@@ -11,3 +11,5 @@
 	path = rtl/cv32e40x
 	url = https://github.com/ParkerJones567/cv32e40x_f_zhf.git
 	branch = f_zhf_fixes
+[submodule "rtl/vicuna2_core/"]
+	branch = main
