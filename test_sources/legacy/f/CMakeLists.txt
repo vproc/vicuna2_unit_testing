@@ -10,5 +10,6 @@ foreach(item ${files})
     string(REPLACE ".S" "" test_name ${item})
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" test_name ${test_name})
     add_legacy_test(${test_name})
+    add_legacy_test_Spike(${test_name})
 endforeach()
 

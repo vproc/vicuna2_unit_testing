@@ -30,10 +30,11 @@ macro(add_unit_test TEST_NAME)
                        COMMAND srec_cat ${TEST_NAME}.bin -binary -offset 0x0000 -byte-swap 4 -o ${TEST_NAME}.vmem -vmem
                        COMMAND rm -f prog_${TEST_NAME}.txt
                        COMMAND echo -n "${BUILD_DIR}/vector-tests/${TEST_NAME}.vmem" > prog_${TEST_NAME}.txt
-                       #COMMAND ${CMAKE_OBJDUMP} -D ${TEST_NAME}.elf > ${TEST_NAME}_dump.txt
+                       COMMAND ${CMAKE_OBJDUMP} -D ${TEST_NAME}.elf > ${TEST_NAME}_dump.txt
                        )
-    
-     
+
+    execute_process(COMMAND python3 ${SCRIPTS_DIR}/count_test_cases.py ${TEST_SOURCES}/riscv-vector-tests/out/v${VREG_W}x32machine/tests/stage2/${TEST_NAME}.S
+                    OUTPUT_VARIABLE TEST_CASE_NUM)
     #If trace option is selected, provide the paths for the .vcd trace files.          
     if(TRACE)
         set(VCD_TRACE_ARGS "${BUILD_DIR}/Testing/last_test_sig.vcd")
@@ -44,10 +45,11 @@ macro(add_unit_test TEST_NAME)
 
     #Add Test
     add_test(NAME ${TEST_NAME}
-             COMMAND ${MODEL_DIR}/verilated_model ${BUILD_DIR}/vector-tests/prog_${TEST_NAME}.txt 32 4194304 1 1 ${TEST_NAME} ${VREG_W} ${VCD_TRACE_ARGS}
+             COMMAND ${MODEL_DIR}/verilated_model ${BUILD_DIR}/vector-tests/prog_${TEST_NAME}.txt 32 4194304 ${MEM_LATENCY} 1 ${TEST_NAME} ${VREG_W} ${TEST_CASE_NUM} ${VCD_TRACE_ARGS}
              WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
     message(STATUS "Successfully added ${TEST_NAME}")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
 
 endmacro()
 
@@ -91,6 +93,7 @@ macro(add_unit_test_Spike TEST_NAME)
     set_tests_properties(${TEST_NAME}_Spike PROPERTIES DEPENDS "${TEST_NAME}")
 
     message(STATUS "Successfully added ${TEST_NAME}_Spike")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
 
 endmacro()
 
@@ -105,7 +108,7 @@ endmacro()
 macro(add_legacy_test TEST_NAME)
 
 
-    string(REPLACE "${SPILL_CACHE_PATH}/" "" folder ${CMAKE_CURRENT_SOURCE_DIR})
+    string(REPLACE "${LEGACY_DIR}/" "" folder ${CMAKE_CURRENT_SOURCE_DIR})
 
     add_executable(${folder}-${TEST_NAME})
 
@@ -115,7 +118,7 @@ macro(add_legacy_test TEST_NAME)
 
     target_sources(${folder}-${TEST_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}.S
-        ${SPILL_CACHE_PATH}/spill_cache.S
+        ${LEGACY_DIR}/bsp/spill_cache.S
     )
 
     string(REPLACE "${REPO_TOP}/test_sources" "${BUILD_DIR}" TEST_BUILD_PATH ${CMAKE_CURRENT_SOURCE_DIR})
@@ -123,7 +126,7 @@ macro(add_legacy_test TEST_NAME)
     #Set Linker
     target_link_options(${folder}-${TEST_NAME} PRIVATE "-nostartfiles")
     target_link_options(${folder}-${TEST_NAME} PRIVATE "-nostdlib")
-    target_link_options(${folder}-${TEST_NAME} PRIVATE "-T${SPILL_CACHE_PATH}/link.ld")
+    target_link_options(${folder}-${TEST_NAME} PRIVATE "-T${LEGACY_DIR}/bsp/link.ld")
 
     #Link BSP
     target_link_libraries(${folder}-${TEST_NAME} PRIVATE bsp_Vicuna)
@@ -158,6 +161,48 @@ macro(add_legacy_test TEST_NAME)
              WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
     message(STATUS "Successfully added Legacy Test ${folder}-${TEST_NAME}")
+    set_tests_properties(${folder}-${TEST_NAME} PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
+
+endmacro()
+
+
+
+#######
+# Macro for adding a Legacy test to spike
+#######
+macro(add_legacy_test_Spike TEST_NAME)
+
+    string(REPLACE "${LEGACY_DIR}/" "" folder ${CMAKE_CURRENT_SOURCE_DIR})
+    add_executable(${folder}-${TEST_NAME}-Spike)
+
+    target_include_directories(${folder}-${TEST_NAME}-Spike PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+    target_sources(${folder}-${TEST_NAME}-Spike PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}.S
+        ${LEGACY_DIR}/bsp/spike_bsp/spill_cache_Spike.S
+        ${LEGACY_DIR}/bsp/spike_bsp/crt0_Spike.S
+    ) 
+
+    #Set Linker
+    target_link_options(${folder}-${TEST_NAME}-Spike PRIVATE "-nostartfiles")
+    target_link_options(${folder}-${TEST_NAME}-Spike PRIVATE "-nostdlib")
+    target_link_options(${folder}-${TEST_NAME}-Spike PRIVATE "-T${LEGACY_DIR}/bsp/spike_bsp/link_spike.ld")
+
+    add_custom_command(TARGET ${folder}-${TEST_NAME}-Spike
+                       POST_BUILD
+                       COMMAND ${CMAKE_OBJDUMP} -D ${folder}-${TEST_NAME}-Spike.elf > ${folder}-${TEST_NAME}-Spike_dump.txt
+                       )
+	              
+
+    #Add Test
+    add_test(NAME ${folder}-${TEST_NAME}-Spike
+             COMMAND ${SPIKE_DIR}/spike --isa=rv32imf_zicntr_zihpm_zfh_zve32f_zvfh_zvl${VREG_W}b ${BUILD_DIR}/legacy/${folder}/${folder}-${TEST_NAME}-Spike.elf   
+             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+    message(STATUS "Successfully added Legacy Test ${folder}-${TEST_NAME}-Spike")
+    set_tests_properties(${folder}-${TEST_NAME}-Spike PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
 
 endmacro()
 

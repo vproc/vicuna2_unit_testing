@@ -17,6 +17,17 @@
 
 
 
+
+    .section ._uart_out, "ax", @progbits
+    .option norvc;
+    .global uart_data
+    .global uart_status
+uart_data:
+    .word           0x00000000
+uart_status:  #no uart recieve currently supported, and uart write is always valid
+    .word           0x00000000
+
+
     .section .text
 
 # entry point
@@ -25,11 +36,9 @@
 _start:
     # initialize stack pointer
     la sp, _stack
-
     # clear bss
     la t1, _bss_start
     la t2, _bss_end
-
     bge t1, t2, bss_clear_end
 
 bss_clear_loop:
@@ -38,7 +47,6 @@ bss_clear_loop:
     ble t1, t2, bss_clear_loop
 
 bss_clear_end:
-
     # jump to main (argc = 0, argv = 0, returns to _start)
     li a0, 0
     li a1, 0

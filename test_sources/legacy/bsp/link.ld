@@ -23,6 +23,8 @@ SECTIONS
         *(.vectors)
     } >boot
 
+  ._uart_out : ALIGN(1000) { *(._uart_out) } >boot
+
     .text : {
         . = ALIGN(4);
         _stext = .;
