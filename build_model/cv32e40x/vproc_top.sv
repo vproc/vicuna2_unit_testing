@@ -3,23 +3,26 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
 
-module vproc_top import vproc_pkg::*; #(
+module vproc_top import vproc_pkg::*, obi_pkg::*; #(
+        parameter int unsigned     ADDR_W        = 32,  // memory bus width in bits
         parameter int unsigned     MEM_W         = 32,  // memory bus width in bits
         parameter int unsigned     VMEM_W        = 32,  // vector memory interface width in bits
+        parameter int unsigned     MEM_PORTS     = 1,
+        parameter int unsigned     PORT_QUEUE_DEPTH = 2,
         parameter vreg_type        VREG_TYPE     = VREG_GENERIC,
         parameter mul_type         MUL_TYPE      = MUL_GENERIC
     )(
         input  logic               clk_i,
         input  logic               rst_ni,
 
-        output logic               mem_req_o,
-        output logic [31:0]        mem_addr_o,
-        output logic               mem_we_o,
-        output logic [MEM_W/8-1:0] mem_be_o,
-        output logic [MEM_W  -1:0] mem_wdata_o,
-        input  logic               mem_rvalid_i,
-        input  logic               mem_err_i,
-        input  logic [MEM_W  -1:0] mem_rdata_i,
+        output logic               mem_req_o    [MEM_PORTS-1:0],
+        output logic [31:0]        mem_addr_o   [MEM_PORTS-1:0],
+        output logic               mem_we_o     [MEM_PORTS-1:0],
+        output logic [MEM_W/8-1:0] mem_be_o     [MEM_PORTS-1:0],
+        output logic [MEM_W  -1:0] mem_wdata_o  [MEM_PORTS-1:0],
+        input  logic               mem_rvalid_i [MEM_PORTS-1:0],
+        input  logic               mem_err_i    [MEM_PORTS-1:0],
+        input  logic [MEM_W  -1:0] mem_rdata_i  [MEM_PORTS-1:0],
 
         output logic [31:0]        pend_vreg_wr_map_o,
 
@@ -87,6 +90,12 @@ module vproc_top import vproc_pkg::*; #(
         .X_RFW_WIDTH ( X_RFW_WIDTH ),
         .X_MISA      ( X_MISA      )
     ) vcore_xif ();
+
+    localparam OBI_CFG = obi_default_cfg(ADDR_W, MEM_W, X_ID_WIDTH, ObiMinimalOptionalConfig);
+    OBI_BUS #(
+        .OBI_CFG     ( OBI_CFG   )
+    ) vcore_obi_bus [MEM_PORTS-1:0] ();
+
     logic        vect_pending_load;
     logic        vect_pending_store;
 
@@ -290,17 +299,17 @@ module vproc_top import vproc_pkg::*; #(
 
 
     // Data read/write for Vector Unit
-    logic                vdata_gnt;
-    logic                vdata_rvalid;
-    logic                vdata_err;
-    logic [VMEM_W-1:0]   vdata_rdata;
-    logic                vdata_req;
-    logic [31:0]         vdata_addr;
-    logic                vdata_we;
-    logic [VMEM_W/8-1:0] vdata_be;
-    logic [VMEM_W-1:0]   vdata_wdata;
-    logic [X_ID_WIDTH-1:0] vdata_req_id;
-    logic [X_ID_WIDTH-1:0] vdata_res_id;
+    logic                vdata_gnt      [MEM_PORTS-1:0];
+    logic                vdata_rvalid   [MEM_PORTS-1:0];
+    logic                vdata_err      [MEM_PORTS-1:0];
+    logic [VMEM_W-1:0]   vdata_rdata    [MEM_PORTS-1:0];
+    logic                vdata_req      [MEM_PORTS-1:0];
+    logic [31:0]         vdata_addr     [MEM_PORTS-1:0];
+    logic                vdata_we       [MEM_PORTS-1:0];
+    logic [VMEM_W/8-1:0] vdata_be       [MEM_PORTS-1:0];
+    logic [VMEM_W-1:0]   vdata_wdata    [MEM_PORTS-1:0];
+    logic [X_ID_WIDTH-1:0] vdata_req_id [MEM_PORTS-1:0];
+    logic [X_ID_WIDTH-1:0] vdata_res_id [MEM_PORTS-1:0];
 
     // Allow for vector loads/stores to be misaligned with respect to VMEM_W
     `ifdef FORCE_ALIGNED_READS
@@ -319,6 +328,9 @@ module vproc_top import vproc_pkg::*; #(
         .MUL_TYPE           ( MUL_TYPE           ),
         .VLSU_FLAGS         ( VLSU_FLAGS         ),
         .BUF_FLAGS          ( BUF_FLAGS          ),
+        .OBI_CFG            ( OBI_CFG            ),
+        .PORT_QUEUE_DEPTH   ( PORT_QUEUE_DEPTH   ),
+        .MEM_PORTS          ( MEM_PORTS          ),
         .DONT_CARE_ZERO     ( 1'b0               ),
         .ASYNC_RESET        ( 1'b0               )
     ) v_core (
@@ -327,9 +339,8 @@ module vproc_top import vproc_pkg::*; #(
 
         .xif_issue_if       ( vcore_xif          ),
         .xif_commit_if      ( vcore_xif          ),
-        .xif_mem_if         ( vcore_xif          ),
-        .xif_memres_if      ( vcore_xif          ),
         .xif_result_if      ( vcore_xif          ),
+        .obi_bus            ( vcore_obi_bus      ),
 
         .pending_load_o     ( vect_pending_load  ),
         .pending_store_o    ( vect_pending_store ),
@@ -359,6 +370,26 @@ module vproc_top import vproc_pkg::*; #(
 
         .pend_vreg_wr_map_o ( pend_vreg_wr_map_o )
     );
+
+
+    if (USE_XIF_MEM) begin
+        assign vcore_xif.mem_valid        = vcore_obi_bus[0].req;
+        assign vcore_obi_bus[0].gnt       = vcore_xif.mem_ready;
+        assign vcore_xif.mem_req.id       = vcore_obi_bus[0].aid;
+        assign vcore_xif.mem_req.addr     = vcore_obi_bus[0].addr;
+        assign vcore_xif.mem_req.mode     = '0;
+        assign vcore_xif.mem_req.we       = vcore_obi_bus[0].we;
+        //assign vcore_xif.mem_req.size; //TODO: get size
+        assign vcore_xif.mem_req.be       = vcore_obi_bus[0].be;
+        assign vcore_xif.mem_req.attr     = '0;
+        assign vcore_xif.mem_req.wdata    = vcore_obi_bus[0].wdata;
+        //assign vcore_xif.mem_req.last; //TODO: get last
+        assign vcore_xif.mem_req.spec     = '0;
+        assign vcore_obi_bus[0].rvalid    = vcore_xif.mem_result_valid;
+        assign vcore_obi_bus[0].rid       = vcore_xif.mem_result.id;
+        assign vcore_obi_bus[0].rdata     = vcore_xif.mem_result.rdata;
+        assign vcore_obi_bus[0].err       = vcore_xif.mem_result.err;        
+    end
 
 
 
@@ -762,69 +793,75 @@ module vproc_top import vproc_pkg::*; #(
         assign vdata_wdata                = '0;
         assign vdata_req_id               = '0;
     end else begin
-        assign vdata_req                  = vcore_xif.mem_valid;
-        assign vcore_xif.mem_ready        = vdata_gnt;
-        assign vdata_addr                 = vcore_xif.mem_req.addr;
-        assign vdata_we                   = vcore_xif.mem_req.we;
-        assign vdata_be                   = vcore_xif.mem_req.be;
-        assign vdata_wdata                = vcore_xif.mem_req.wdata;
-        assign vdata_req_id               = vcore_xif.mem_req.id;
-        assign vcore_xif.mem_resp.exc     = '0;
-        assign vcore_xif.mem_resp.exccode = '0;
-        assign vcore_xif.mem_resp.dbg     = '0;
-        assign vcore_xif.mem_result_valid = vdata_rvalid;
-        assign vcore_xif.mem_result.id    = vdata_res_id;
-        assign vcore_xif.mem_result.rdata = vdata_rdata;
-        assign vcore_xif.mem_result.err   = vdata_err;
-        assign vcore_xif.mem_result.dbg   = '0;
+        for(genvar i = 0; i < MEM_PORTS; i++) begin
+            assign vdata_req[i]                  = vcore_obi_bus[i].req;
+            assign vcore_obi_bus[i].gnt          = vdata_gnt[i];
+            assign vdata_addr[i]                 = vcore_obi_bus[i].addr;
+            assign vdata_we[i]                   = vcore_obi_bus[i].we;
+            assign vdata_be[i]                   = vcore_obi_bus[i].be;
+            assign vdata_wdata[i]                = vcore_obi_bus[i].wdata;
+            assign vdata_req_id[i]               = vcore_obi_bus[i].aid;
+            assign vcore_obi_bus[i].rvalid       = vdata_rvalid[i];
+            assign vcore_obi_bus[i].rid          = vdata_res_id[i];
+            assign vcore_obi_bus[i].rdata        = vdata_rdata[i];
+            assign vcore_obi_bus[i].err          = vdata_err[i];
+        end
     end
 
     // Data arbiter for main core and vector unit
     logic                sdata_hold;
-    logic                data_req;
-    logic [31:0]         data_addr;
-    logic                data_we;
-    logic [VMEM_W/8-1:0] data_be;
-    logic [VMEM_W  -1:0] data_wdata;
-    logic                data_gnt;
-    logic                data_rvalid;
-    logic                data_err;
-    logic [VMEM_W  -1:0] data_rdata;
-    logic                sdata_waiting, vdata_waiting;
+    logic                data_req       [MEM_PORTS-1:0];
+    logic [31:0]         data_addr      [MEM_PORTS-1:0];
+    logic                data_we        [MEM_PORTS-1:0];
+    logic [VMEM_W/8-1:0] data_be        [MEM_PORTS-1:0];
+    logic [VMEM_W  -1:0] data_wdata     [MEM_PORTS-1:0];
+    logic                data_gnt       [MEM_PORTS-1:0];
+    logic                data_rvalid    [MEM_PORTS-1:0];
+    logic                data_err       [MEM_PORTS-1:0];
+    logic [VMEM_W  -1:0] data_rdata     [MEM_PORTS-1:0];
+    logic                sdata_waiting;
+    logic                vdata_waiting  [MEM_PORTS-1:0];
     logic [31:0]         sdata_wait_addr;
-    logic [X_ID_WIDTH-1:0] vdata_wait_id;
-    assign sdata_hold = ~USE_XIF_MEM & (vdata_req | vect_pending_store | (vect_pending_load & sdata_we));
+    logic [X_ID_WIDTH-1:0] vdata_wait_id [MEM_PORTS-1:0];
+    assign sdata_hold = ~USE_XIF_MEM & (vdata_req[0] | vect_pending_store | (vect_pending_load & sdata_we));
     always_comb begin
-        data_req   = vdata_req | (sdata_req & ~sdata_hold);
-        data_addr  = sdata_addr;
-        data_we    = sdata_we;
+        data_req[0]   = vdata_req[0] | (sdata_req & ~sdata_hold);
+        data_addr[0]  = sdata_addr;
+        data_we[0]    = sdata_we;
         
         `ifdef FORCE_ALIGNED_READS
-        data_be    = {{(VMEM_W-32){1'b0}}, sdata_be} << (sdata_addr[$clog2(VMEM_W/8)-1:0] & {{$clog2(VMEM_W/32){1'b1}}, 2'b00});
-        data_wdata = '0;
+        data_be[0]    = {{(VMEM_W-32){1'b0}}, sdata_be} << (sdata_addr[$clog2(VMEM_W/8)-1:0] & {{$clog2(VMEM_W/32){1'b1}}, 2'b00});
+        data_wdata[0] = '0;
         for (int i = 0; i < VMEM_W / 32; i++) begin
-            data_wdata[32*i +: 32] = sdata_wdata;
+            data_wdata[0][32*i +: 32] = sdata_wdata;
         end
         `else
-        data_be    = {{(VMEM_W-32){1'b0}}, sdata_be};
-        data_wdata = {{(VMEM_W-32){1'b0}}, sdata_wdata};
+        data_be[0]    = {{(VMEM_W-32){1'b0}}, sdata_be};
+        data_wdata[0] = {{(VMEM_W-32){1'b0}}, sdata_wdata};
         `endif
         
-        if (vdata_req) begin
-            data_addr  = vdata_addr;
-            data_we    = vdata_we;
-            data_be    = vdata_be;
-            data_wdata = vdata_wdata;
+        if (vdata_req[0]) begin
+            data_addr[0]     = vdata_addr[0];
+            data_we[0]       = vdata_we[0];
+            data_be[0]       = vdata_be[0];
+            data_wdata[0]    = vdata_wdata[0];
+        end
+        for(int i = 1; i < MEM_PORTS; i++) begin
+            data_req[i]      = vdata_req[i];
+            data_addr[i]     = vdata_addr[i];
+            data_we[i]       = vdata_we[i];
+            data_be[i]       = vdata_be[i];
+            data_wdata[i]    = vdata_wdata[i];
         end
     end
-    assign sdata_gnt = data_gnt & sdata_req & ~sdata_hold;
-    assign vdata_gnt = data_gnt & vdata_req;
+    assign sdata_gnt = data_gnt[0] & sdata_req & ~sdata_hold;
+    for(genvar i = 0; i < MEM_PORTS; i++) begin
+        assign vdata_gnt[i] = data_gnt[i] & vdata_req[i];
+    end
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             sdata_waiting   <= 1'b0;
-            vdata_waiting   <= 1'b0;
             sdata_wait_addr <= '0;
-            vdata_wait_id   <= '0;
         end else begin
             if (sdata_gnt) begin
                 sdata_waiting   <= 1'b1;
@@ -833,24 +870,43 @@ module vproc_top import vproc_pkg::*; #(
             else if (sdata_rvalid) begin
                 sdata_waiting <= 1'b0;
             end
-            if (vdata_gnt) begin
-                vdata_waiting <= 1'b1;
-                vdata_wait_id <= vdata_req_id;
-            end
-            else if (vdata_rvalid) begin
-                vdata_waiting <= 1'b0;
-            end
         end
     end
-    assign sdata_rvalid = sdata_waiting & data_rvalid;
-    assign vdata_rvalid = vdata_waiting & data_rvalid;
-    assign sdata_err    = data_err;
-    assign vdata_err    = data_err;
+
+    generate
+        for (genvar i = 0; i < MEM_PORTS; i++) begin
+            vproc_queue #(
+                .WIDTH        ( $bits(X_ID_WIDTH)                                             ),
+                .DEPTH        ( PORT_QUEUE_DEPTH                                              ),
+                .FLOW         ( 1'b1                                                          )
+            ) v_wait_id_queue (
+                .clk_i        ( clk_i                                                         ),
+                .async_rst_ni ( 1                                                             ),
+                .sync_rst_ni  ( sync_rst_n                                                    ),
+                .enq_ready_o  (                                                               ),
+                .enq_valid_i  ( vdata_gnt[i]                                                  ),
+                .enq_data_i   ( vdata_req_id[i]                                               ),
+                .deq_ready_i  ( vdata_rvalid[i]                                               ),
+                .deq_valid_o  ( vdata_waiting[i]                                              ),
+                .deq_data_o   ( vdata_wait_id[i]                                              ),
+                .flags_any_o  (                                                               ),
+                .flags_all_o  (                                                               )
+            );
+        end
+    endgenerate
+
+    assign sdata_rvalid = sdata_waiting & data_rvalid[0];
+    assign sdata_err    = data_err[0];
+
+    for(genvar i = 0; i < MEM_PORTS; i++) begin
+        assign vdata_rvalid[i] = vdata_waiting[i] & data_rvalid[i];
+        assign vdata_err[i]    = data_err[i];
+    end
 
     `ifdef FORCE_ALIGNED_READS
-    assign sdata_rdata  = data_rdata[(sdata_wait_addr[$clog2(VMEM_W)-1:0] & {3'b000, {($clog2(VMEM_W/8)-2){1'b1}}, 2'b00})*8 +: 32];
+    assign sdata_rdata  = data_rdata[0][(sdata_wait_addr[$clog2(VMEM_W)-1:0] & {3'b000, {($clog2(VMEM_W/8)-2){1'b1}}, 2'b00})*8 +: 32];
     `else
-    assign sdata_rdata  = data_rdata[31:0];
+    assign sdata_rdata  = data_rdata[0][31:0];
     `endif
     assign vdata_rdata  = data_rdata;
     assign vdata_res_id = vdata_wait_id;
@@ -874,28 +930,30 @@ module vproc_top import vproc_pkg::*; #(
 
 
     // Memory Interface signals D-DATA
-    logic               dmem_req;
-    logic               dmem_gnt;
-    logic [31:0]        dmem_addr;
-    logic               dmem_we;
-    logic [MEM_W/8-1:0] dmem_be;
-    logic [MEM_W  -1:0] dmem_wdata;
-    logic               dmem_rvalid;
-    logic               dmem_wvalid;
-    logic [MEM_W  -1:0] dmem_rdata;
-    logic               dmem_err;
+    logic               dmem_req    [MEM_PORTS-1:0];
+    logic               dmem_gnt    [MEM_PORTS-1:0];
+    logic [31:0]        dmem_addr   [MEM_PORTS-1:0];
+    logic               dmem_we     [MEM_PORTS-1:0];
+    logic [MEM_W/8-1:0] dmem_be     [MEM_PORTS-1:0];
+    logic [MEM_W  -1:0] dmem_wdata  [MEM_PORTS-1:0];
+    logic               dmem_rvalid [MEM_PORTS-1:0];
+    logic               dmem_wvalid [MEM_PORTS-1:0];
+    logic [MEM_W  -1:0] dmem_rdata  [MEM_PORTS-1:0];
+    logic               dmem_err    [MEM_PORTS-1:0];
     logic               d_miss /* verilator public */;
     logic               d_hit  /* verilator public */;
 
-    assign dmem_req    = data_req;
-    assign dmem_addr   = data_addr;
-    assign dmem_we     = data_we && mem_req_o;
-    assign dmem_be     = data_be;
-    assign dmem_wdata  = data_wdata;
-    assign data_gnt    = dmem_gnt;
-    assign data_rvalid = dmem_rvalid | dmem_wvalid;
-    assign data_rdata  = dmem_rdata;
-    assign data_err    = dmem_err;
+    for(genvar i = 0; i < MEM_PORTS; i++) begin
+        assign dmem_req[i]    = data_req[i];
+        assign dmem_addr[i]   = data_addr[i];
+        assign dmem_we[i]     = data_we[i] && mem_req_o[i];
+        assign dmem_be[i]     = data_be[i];
+        assign dmem_wdata[i]  = data_wdata[i];
+        assign data_gnt[i]    = dmem_gnt[i];
+        assign data_rvalid[i] = dmem_rvalid[i] | dmem_wvalid[i];
+        assign data_rdata[i]  = dmem_rdata[i];
+        assign data_err[i]    = dmem_err[i];
+    end
 
 
 
@@ -927,37 +985,43 @@ module vproc_top import vproc_pkg::*; #(
 
 
     // shift register keeping track of the source of mem requests for up to 32 cycles (needed to keep track of reads/writes)
-    logic        req_sources  [32];
-    logic        req_write    [32]; // keeping track of whether the request was a write
-    logic [4:0]  req_count;
+    logic [MEM_PORTS-1:0][31:0] req_sources;
+    logic [MEM_PORTS-1:0][31:0] req_write; // keeping track of whether the request was a write
+    logic [MEM_PORTS-1:0][4:0]  req_count;
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            req_count <= '0;
+            req_count <= '{default: '0};
         end else begin
-            if (mem_rvalid_i) begin
-                for (int i = 0; i < 31; i++) begin
-                    req_sources  [i] <= req_sources  [i+1];
-                    req_write    [i] <= req_write    [i+1];
+            for(int i = 0; i < MEM_PORTS; i++) begin
+                if (mem_rvalid_i[i]) begin
+                    for (int j = 0; j < 31; j++) begin
+                        req_sources [i][j] <= req_sources  [i][j+1];
+                        req_write    [i][j] <= req_write    [i][j+1];
+                    end
+                    if (~dmem_gnt[i]) begin
+                        req_count[i] <= req_count[i] - 1;
+                    end else begin
+                        req_sources  [i][req_count[i]-1] <= dmem_gnt[i];
+                        req_write    [i][req_count[i]-1] <= dmem_we[i];
+                    end
                 end
-                if (~dmem_gnt) begin
-                    req_count <= req_count - 1;
-                end else begin
-                    req_sources  [req_count-1] <= dmem_gnt;
-                    req_write    [req_count-1] <= dmem_we;
+                else if (dmem_gnt[i]) begin
+                    req_sources  [i][req_count] <= dmem_gnt[i];
+                    req_write    [i][req_count] <= dmem_we[i];
+                    req_count[i]                <= req_count[i] + 1;
                 end
-            end
-            else if (dmem_gnt) begin
-                req_sources  [req_count] <= dmem_gnt;
-                req_write    [req_count] <= dmem_we;
-                req_count                <= req_count + 1;
             end
         end
     end
 
     assign imem_rvalid = mem_irvalid_i;
 
-    assign dmem_rvalid = mem_rvalid_i & ~req_write[0];
-    assign dmem_wvalid = mem_rvalid_i &  req_write[0]; //this could be an issue?
+    generate
+        for(genvar i = 0; i < MEM_PORTS; i++) begin
+            assign dmem_rvalid[i] = mem_rvalid_i[i] & ~req_write[i][0];
+            assign dmem_wvalid[i] = mem_rvalid_i[i] &  req_write[i][0]; //this could be an issue?
+        end
+    endgenerate
 
     assign imem_err    = mem_ierr_i;
     assign dmem_err    = mem_err_i;

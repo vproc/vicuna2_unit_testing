@@ -16,12 +16,12 @@ message(STATUS "CMake Version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CM
 set(MEM_LATENCY 1 CACHE STRING "Memory latency")
 set(INTEGER 0 CACHE STRING "Variable for ChipsAlliance Tests to build only integer vector tests")
 
-option(TRACE        "Enable trace outputs"                                         OFF)
+option(TRACE        "Enable trace outputs"                                         ON)
 option(SPIKE        "Enable Spike Cosim"                                           OFF)
 option(PRINT        "Enable print statements"                                      OFF)
 
 option(LEGACY       "Use Legacy unit tests"                                        OFF)
-option(BUILD_TEST_SOURCE "Build ChipsAlliance Tests from source.  Can skip if already build for chosen configuration" ON)
+option(BUILD_TEST_SOURCE "Build ChipsAlliance Tests from source.  Can skip if already build for chosen configuration" OFF)
 
 
 #####
@@ -52,6 +52,8 @@ message("Selected VREG_W = ${VREG_W}")
 message("Selected VMEM_W = ${VMEM_W}")
 set(MEM_W ${VMEM_W})
 message("Selected MEM_W = ${MEM_W}")
+set(MEM_PORTS ${VMEM_PORTS})
+message("Selected MEM_PORTS = ${MEM_PORTS}")
 
 
 #####

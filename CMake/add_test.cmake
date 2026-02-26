@@ -30,7 +30,7 @@ macro(add_unit_test TEST_NAME)
                        COMMAND srec_cat ${TEST_NAME}.bin -binary -offset 0x0000 -byte-swap 4 -o ${TEST_NAME}.vmem -vmem
                        COMMAND rm -f prog_${TEST_NAME}.txt
                        COMMAND echo -n "${BUILD_DIR}/vector-tests/${TEST_NAME}.vmem" > prog_${TEST_NAME}.txt
-                       COMMAND ${CMAKE_OBJDUMP} -D ${TEST_NAME}.elf > ${TEST_NAME}_dump.txt
+                       #COMMAND ${CMAKE_OBJDUMP} -D ${TEST_NAME}.elf > ${TEST_NAME}_dump.txt
                        )
 
     execute_process(COMMAND python3 ${SCRIPTS_DIR}/count_test_cases.py ${TEST_SOURCES}/riscv-vector-tests/out/v${VREG_W}x32machine/tests/stage2/${TEST_NAME}.S
@@ -45,7 +45,7 @@ macro(add_unit_test TEST_NAME)
 
     #Add Test
     add_test(NAME ${TEST_NAME}
-             COMMAND ${MODEL_DIR}/verilated_model ${BUILD_DIR}/vector-tests/prog_${TEST_NAME}.txt 32 4194304 ${MEM_LATENCY} 1 ${TEST_NAME} ${VREG_W} ${TEST_CASE_NUM} ${VCD_TRACE_ARGS}
+             COMMAND ${MODEL_DIR}/verilated_model ${BUILD_DIR}/vector-tests/prog_${TEST_NAME}.txt ${MEM_PORTS} 32 4194304 ${MEM_LATENCY} 1 ${TEST_NAME} ${VREG_W} ${TEST_CASE_NUM} ${VCD_TRACE_ARGS}
              WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
     message(STATUS "Successfully added ${TEST_NAME}")
@@ -142,7 +142,8 @@ macro(add_legacy_test TEST_NAME)
                        COMMAND echo -n "${TEST_BUILD_PATH}/${TEST_NAME}_result.txt " >> prog_${TEST_NAME}.txt
                        COMMAND readelf -s ${folder}-${TEST_NAME}.elf | sed '2,13 s/ //1' | grep vdata_start | cut -d " " -f 6 | tr [=["\n"]=] " " >> prog_${TEST_NAME}.txt
                        COMMAND readelf -s ${folder}-${TEST_NAME}.elf | sed '2,13 s/ //1' | grep vdata_end | cut -d " " -f 6 | tr [=["\n"]=] " " >> prog_${TEST_NAME}.txt
-                       COMMAND ${CMAKE_OBJDUMP} -D ${folder}-${TEST_NAME}.elf > ${TEST_NAME}_dump.txt)
+                       COMMAND ${CMAKE_OBJDUMP} -D ${folder}-${TEST_NAME}.elf > ${TEST_NAME}_dump.txt
+                       )
     
      
     #If trace option is selected, provide the paths for the .csv and .vcd trace files.  Due to argument parsing in verilator_main.cpp, both must be provided                
