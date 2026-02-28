@@ -99,6 +99,18 @@ elseif(${RISCV_ARCH} STREQUAL "rv32imf_zfh_zve32f_zvfh")
     set(RISCV_F ON)
     set(RISCV_ZVFH ON)
 
+elseif(${RISCV_ARCH} STREQUAL "rv32im_zve32x_zvbb")
+    set(RISCV_ABI ilp32) 
+    set(RISCV_ZVE32X ON)
+    set(RISCV_ZVBB ON)
+    set(INTEGER 1)
+
+elseif(${RISCV_ARCH} STREQUAL "rv32im_zve32x_zvbc")
+    set(RISCV_ABI ilp32) 
+    set(RISCV_ZVE32X ON)
+    set(RISCV_ZVBC ON)
+    set(INTEGER 1)
+
 elseif(${RISCV_ARCH} STREQUAL "rv32im_zve32x_zvbb_zvbc")
     set(RISCV_ABI ilp32) 
     set(RISCV_ZVE32X ON)
