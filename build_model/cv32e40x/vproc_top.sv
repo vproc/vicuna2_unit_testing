@@ -7,6 +7,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         parameter int unsigned     ADDR_W        = 32,  // memory bus width in bits
         parameter int unsigned     MEM_W         = 32,  // memory bus width in bits
         parameter int unsigned     VMEM_W        = 32,  // vector memory interface width in bits
+        parameter int unsigned     OBI_ID_WIDTH  = 8,   // vector memory interface width in bits
         parameter int unsigned     MEM_PORTS     = 1,
         parameter int unsigned     PORT_QUEUE_DEPTH = 2,
         parameter vreg_type        VREG_TYPE     = VREG_GENERIC,
@@ -20,9 +21,11 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         output logic               mem_we_o     [MEM_PORTS-1:0],
         output logic [MEM_W/8-1:0] mem_be_o     [MEM_PORTS-1:0],
         output logic [MEM_W  -1:0] mem_wdata_o  [MEM_PORTS-1:0],
+        output logic               mem_aid_o    [MEM_PORTS-1:0],
         input  logic               mem_rvalid_i [MEM_PORTS-1:0],
         input  logic               mem_err_i    [MEM_PORTS-1:0],
         input  logic [MEM_W  -1:0] mem_rdata_i  [MEM_PORTS-1:0],
+        input  logic               mem_rid_i    [MEM_PORTS-1:0],
 
         output logic [31:0]        pend_vreg_wr_map_o,
 
@@ -91,7 +94,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         .X_MISA      ( X_MISA      )
     ) vcore_xif ();
 
-    localparam OBI_CFG = obi_default_cfg(ADDR_W, MEM_W, X_ID_WIDTH, ObiMinimalOptionalConfig);
+    localparam OBI_CFG = obi_default_cfg(ADDR_W, MEM_W, OBI_ID_WIDTH, ObiMinimalOptionalConfig);
     OBI_BUS #(
         .OBI_CFG     ( OBI_CFG   )
     ) vcore_obi_bus [MEM_PORTS-1:0] ();
@@ -308,8 +311,8 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
     logic                vdata_we       [MEM_PORTS-1:0];
     logic [VMEM_W/8-1:0] vdata_be       [MEM_PORTS-1:0];
     logic [VMEM_W-1:0]   vdata_wdata    [MEM_PORTS-1:0];
-    logic [X_ID_WIDTH-1:0] vdata_req_id [MEM_PORTS-1:0];
-    logic [X_ID_WIDTH-1:0] vdata_res_id [MEM_PORTS-1:0];
+    logic [OBI_ID_WIDTH-1:0] vdata_req_id [MEM_PORTS-1:0];
+    logic [OBI_ID_WIDTH-1:0] vdata_res_id [MEM_PORTS-1:0];
 
     // Allow for vector loads/stores to be misaligned with respect to VMEM_W
     `ifdef FORCE_ALIGNED_READS
@@ -371,11 +374,11 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         .pend_vreg_wr_map_o ( pend_vreg_wr_map_o )
     );
 
-
-    if (USE_XIF_MEM) begin
+    // TODO: wire id signal from/to aoptional/roptional field from lsu
+    if (USE_XIF_MEM) begin 
         assign vcore_xif.mem_valid        = vcore_obi_bus[0].req;
         assign vcore_obi_bus[0].gnt       = vcore_xif.mem_ready;
-        assign vcore_xif.mem_req.id       = vcore_obi_bus[0].aid;
+        //assign vcore_xif.mem_req.id       = vcore_obi_bus[0].aid;
         assign vcore_xif.mem_req.addr     = vcore_obi_bus[0].addr;
         assign vcore_xif.mem_req.mode     = '0;
         assign vcore_xif.mem_req.we       = vcore_obi_bus[0].we;
@@ -386,7 +389,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         //assign vcore_xif.mem_req.last; //TODO: get last
         assign vcore_xif.mem_req.spec     = '0;
         assign vcore_obi_bus[0].rvalid    = vcore_xif.mem_result_valid;
-        assign vcore_obi_bus[0].rid       = vcore_xif.mem_result.id;
+        //assign vcore_obi_bus[0].rid       = vcore_xif.mem_result.id;
         assign vcore_obi_bus[0].rdata     = vcore_xif.mem_result.rdata;
         assign vcore_obi_bus[0].err       = vcore_xif.mem_result.err;        
     end
@@ -819,15 +822,17 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
     logic                data_rvalid    [MEM_PORTS-1:0];
     logic                data_err       [MEM_PORTS-1:0];
     logic [VMEM_W  -1:0] data_rdata     [MEM_PORTS-1:0];
+    logic [OBI_ID_WIDTH-1:0] data_req_id [MEM_PORTS-1:0];
+    logic [OBI_ID_WIDTH-1:0] data_res_id [MEM_PORTS-1:0];
     logic                sdata_waiting;
-    logic                vdata_waiting  [MEM_PORTS-1:0];
+    logic                vdata_waiting;
     logic [31:0]         sdata_wait_addr;
-    logic [X_ID_WIDTH-1:0] vdata_wait_id [MEM_PORTS-1:0];
     assign sdata_hold = ~USE_XIF_MEM & (vdata_req[0] | vect_pending_store | (vect_pending_load & sdata_we));
     always_comb begin
         data_req[0]   = vdata_req[0] | (sdata_req & ~sdata_hold);
         data_addr[0]  = sdata_addr;
         data_we[0]    = sdata_we;
+        // TODO: data_req_id[0] = ; for cva core
         
         `ifdef FORCE_ALIGNED_READS
         data_be[0]    = {{(VMEM_W-32){1'b0}}, sdata_be} << (sdata_addr[$clog2(VMEM_W/8)-1:0] & {{$clog2(VMEM_W/32){1'b1}}, 2'b00});
@@ -845,6 +850,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
             data_we[0]       = vdata_we[0];
             data_be[0]       = vdata_be[0];
             data_wdata[0]    = vdata_wdata[0];
+            data_req_id[0]   = vdata_req_id[0];
         end
         for(int i = 1; i < MEM_PORTS; i++) begin
             data_req[i]      = vdata_req[i];
@@ -852,6 +858,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
             data_we[i]       = vdata_we[i];
             data_be[i]       = vdata_be[i];
             data_wdata[i]    = vdata_wdata[i];
+            data_req_id[i]   = vdata_req_id[i];
         end
     end
     assign sdata_gnt = data_gnt[0] & sdata_req & ~sdata_hold;
@@ -873,33 +880,32 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         end
     end
 
-    generate
-        for (genvar i = 0; i < MEM_PORTS; i++) begin
-            vproc_queue #(
-                .WIDTH        ( $bits(X_ID_WIDTH)                                             ),
-                .DEPTH        ( PORT_QUEUE_DEPTH                                              ),
-                .FLOW         ( 1'b1                                                          )
-            ) v_wait_id_queue (
-                .clk_i        ( clk_i                                                         ),
-                .async_rst_ni ( 1                                                             ),
-                .sync_rst_ni  ( sync_rst_n                                                    ),
-                .enq_ready_o  (                                                               ),
-                .enq_valid_i  ( vdata_gnt[i]                                                  ),
-                .enq_data_i   ( vdata_req_id[i]                                               ),
-                .deq_ready_i  ( vdata_rvalid[i]                                               ),
-                .deq_valid_o  ( vdata_waiting[i]                                              ),
-                .deq_data_o   ( vdata_wait_id[i]                                              ),
-                .flags_any_o  (                                                               ),
-                .flags_all_o  (                                                               )
-            );
-        end
-    endgenerate
+    vproc_queue #(
+        .WIDTH        ( 1                                            	 	          ),
+        .DEPTH        ( PORT_QUEUE_DEPTH                                              ),
+        .FLOW         ( 1'b1                                                          )
+    ) v_wait_id_queue (
+        .clk_i        ( clk_i                                                         ),
+        .async_rst_ni ( 1                                                             ),
+        .sync_rst_ni  ( sync_rst_n                                                    ),
+        .enq_ready_o  (                                                               ),
+        .enq_valid_i  ( vdata_gnt[0]                                                  ),
+        .enq_data_i   (                                                               ),
+        .deq_ready_i  ( vdata_rvalid[0]                                               ),
+        .deq_valid_o  ( vdata_waiting                                                 ),
+        .deq_data_o   (                                                               ),
+        .flags_any_o  (                                                               ),
+        .flags_all_o  (                                                               )
+    );
 
     assign sdata_rvalid = sdata_waiting & data_rvalid[0];
     assign sdata_err    = data_err[0];
-
-    for(genvar i = 0; i < MEM_PORTS; i++) begin
-        assign vdata_rvalid[i] = vdata_waiting[i] & data_rvalid[i];
+    
+    
+    assign vdata_rvalid[0] = vdata_waiting & data_rvalid[0];
+    assign vdata_err[0]    = data_err[0];
+    for(genvar i = 1; i < MEM_PORTS; i++) begin
+        assign vdata_rvalid[i] = data_rvalid[i];
         assign vdata_err[i]    = data_err[i];
     end
 
@@ -909,7 +915,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
     assign sdata_rdata  = data_rdata[0][31:0];
     `endif
     assign vdata_rdata  = data_rdata;
-    assign vdata_res_id = vdata_wait_id;
+    assign vdata_res_id = data_res_id;
 
     // Memory Interface signals I-DATA
     logic             imem_req;
@@ -940,6 +946,8 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
     logic               dmem_wvalid [MEM_PORTS-1:0];
     logic [MEM_W  -1:0] dmem_rdata  [MEM_PORTS-1:0];
     logic               dmem_err    [MEM_PORTS-1:0];
+    logic               dmem_aid    [MEM_PORTS-1:0];
+    logic               dmem_rid    [MEM_PORTS-1:0];
     logic               d_miss /* verilator public */;
     logic               d_hit  /* verilator public */;
 
@@ -953,6 +961,8 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         assign data_rvalid[i] = dmem_rvalid[i] | dmem_wvalid[i];
         assign data_rdata[i]  = dmem_rdata[i];
         assign data_err[i]    = dmem_err[i];
+        assign dmem_aid[i]    = data_req_id[i];
+        assign data_res_id[i] = dmem_rid[i];
     end
 
 
@@ -1028,6 +1038,9 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
 
     assign imem_rdata  = mem_irdata_i;
     assign dmem_rdata  = mem_rdata_i;
+    
+    assign mem_aid_o   = dmem_aid;
+    assign dmem_rid    = mem_rid_i;
 
 
 
