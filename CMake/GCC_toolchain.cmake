@@ -1,5 +1,5 @@
-
-set(RISCV_GCC_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../toolchain/GCC/${RISCV_ARCH}")
+set(GCC_RISCV_ARCH "rv32imf_zfh_zve32f_zvfh_zvbb") #All currently supports extensions here.  This is the name of the GCC build used
+set(RISCV_GCC_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../toolchain/GCC/${GCC_RISCV_ARCH}")
 set(RISCV_GCC_BASENAME "riscv32-unknown-elf")
 
 set(RISCV_LLVM_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../toolchain/llvm/bin" CACHE PATH "Install location of LLVM RISC-V toolchain.")
