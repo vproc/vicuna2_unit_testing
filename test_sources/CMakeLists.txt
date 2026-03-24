@@ -17,8 +17,9 @@ if (BUILD_TEST_SOURCE)
     set(ENV{VARCH} zvl${VREG_W}b)
 
     execute_process(COMMAND echo $ENV{PATH}
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/riscv-vector-tests/)     
-
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/riscv-vector-tests/)
+    execute_process(COMMAND make clean
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/riscv-vector-tests/)
     execute_process(COMMAND make all -j$ENV{nproc} --environment-overrides VLEN=${VREG_W} XLEN=32 INTEGER=${INTEGER} MARCH=${RISCV_ARCH}
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/riscv-vector-tests/)
 endif()               

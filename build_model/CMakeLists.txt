@@ -54,6 +54,8 @@ if(${RISCV_ARCH} STREQUAL "rv32im") #Build only scalar core
     set(RISCV_ZVE32X "" )
     set(RISCV_ZVE32F "" )
     set(RISCV_ZVFH "" )
+    set(RISCV_ZVBB "" )
+    set(RISCV_ZVBC "" )
 
 elseif(${RISCV_ARCH} STREQUAL "rv32imf") #Build scalar core with FPU on the Xif interface
     set(XIF_FLAG "-DXIF_ON" )
@@ -62,6 +64,8 @@ elseif(${RISCV_ARCH} STREQUAL "rv32imf") #Build scalar core with FPU on the Xif 
     set(RISCV_ZVE32X "" )
     set(RISCV_ZVE32F "" )
     set(RISCV_ZVFH "" )
+    set(RISCV_ZVBB "" )
+    set(RISCV_ZVBC "" )
     #C++ Flags
     add_definitions(-DRISCV_F)
 
@@ -72,6 +76,8 @@ elseif(${RISCV_ARCH} STREQUAL "rv32imf_zfh") #Build scalar core with FPU on the 
     set(RISCV_ZVE32X "" )
     set(RISCV_ZVE32F "" )
     set(RISCV_ZVFH "" )
+    set(RISCV_ZVBB "" )
+    set(RISCV_ZVBC "" )
     #C++ Flags
     add_definitions(-DRISCV_F)
     add_definitions(-DRISCV_ZFH)
@@ -83,6 +89,8 @@ elseif(${RISCV_ARCH} STREQUAL "rv32im_zve32x") #Build scalar core with Vicuna on
     set(RISCV_ZVE32X "-DRISCV_ZVE32X" )
     set(RISCV_ZVE32F "" )
     set(RISCV_ZVFH "" )
+    set(RISCV_ZVBB "" )
+    set(RISCV_ZVBC "" )
     #C++ Flags
     add_definitions(-DRISCV_ZVE32X)
 
@@ -93,6 +101,8 @@ elseif(${RISCV_ARCH} STREQUAL "rv32imf_zve32f") #Build scalar core with Vicuna a
     set(RISCV_ZVE32X "-DRISCV_ZVE32X" )
     set(RISCV_ZVE32F "-DRISCV_ZVE32F" )
     set(RISCV_ZVFH "" )
+    set(RISCV_ZVBB "" )
+    set(RISCV_ZVBC "" )
     #C++ Flags
     add_definitions(-DRISCV_F)
     add_definitions(-DRISCV_ZVE32X)
@@ -105,12 +115,50 @@ elseif(${RISCV_ARCH} STREQUAL "rv32imf_zfh_zve32f_zvfh") #Build scalar core with
     set(RISCV_ZVE32X "-DRISCV_ZVE32X" )
     set(RISCV_ZVE32F "-DRISCV_ZVE32F" )
     set(RISCV_ZVFH "-DRISCV_ZVFH" )
+    set(RISCV_ZVBB "" )
+    set(RISCV_ZVBC "" )
     #C++ Flags
     add_definitions(-DRISCV_F)
     add_definitions(-DRISCV_ZFH)
     add_definitions(-DRISCV_ZVE32X)
     add_definitions(-DRISCV_ZVE32F)
     add_definitions(-DRISCV_ZVFH)
+
+elseif(${RISCV_ARCH} STREQUAL "rv32im_zve32x_zvbb") #Build CV32E40X with Vicuna (+ crypto Extension) on the Xif interface
+    set(XIF_FLAG "-DXIF_ON" )
+    set(RISCV_F "" )
+    set(RISCV_ZFH "" )
+    set(RISCV_ZVE32X "-DRISCV_ZVE32X" )
+    set(RISCV_ZVE32F "" )
+    set(RISCV_ZVFH "" )
+    set(RISCV_ZVBB "-DRISCV_ZVBB" )
+    set(RISCV_ZVBC "" )
+    #C++ Flags
+    add_definitions(-DRISCV_ZVE32X)
+
+elseif(${RISCV_ARCH} STREQUAL "rv32im_zve32x_zvbc") #Build CV32E40X with Vicuna (+ crypto Extension) on the Xif interface
+    set(XIF_FLAG "-DXIF_ON" )
+    set(RISCV_F "" )
+    set(RISCV_ZFH "" )
+    set(RISCV_ZVE32X "-DRISCV_ZVE32X" )
+    set(RISCV_ZVE32F "" )
+    set(RISCV_ZVFH "" )
+    set(RISCV_ZVBB "" )
+    set(RISCV_ZVBC "-DRISCV_ZVBC" )
+    #C++ Flags
+    add_definitions(-DRISCV_ZVE32X)
+
+elseif(${RISCV_ARCH} STREQUAL "rv32im_zve32x_zvbb_zvbc") #Build CV32E40X with Vicuna (+ crypto Extension) on the Xif interface
+    set(XIF_FLAG "-DXIF_ON" )
+    set(RISCV_F "" )
+    set(RISCV_ZFH "" )
+    set(RISCV_ZVE32X "-DRISCV_ZVE32X" )
+    set(RISCV_ZVE32F "" )
+    set(RISCV_ZVFH "" )
+    set(RISCV_ZVBB "-DRISCV_ZVBB" )
+    set(RISCV_ZVBC "-DRISCV_ZVBC" )
+    #C++ Flags
+    add_definitions(-DRISCV_ZVE32X)
 
 else()
     message(FATAL_ERROR "Unsupported RISCV_ARCH selected")
@@ -407,6 +455,8 @@ if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
                                 ${RISCV_ZVE32X}
                                 ${RISCV_ZVE32F}
                                 ${RISCV_ZVFH}
+                                ${RISCV_ZVBB}
+                                ${RISCV_ZVBC}
                                 -CFLAGS "-std=gnu++14 -O2")
 
 elseif( ${SCALAR_CORE} STREQUAL "cv32a60x" ) #TODO: Verify/Test support for floating point vector systems with this core.  Currently, only Zve32x tested.
@@ -437,6 +487,8 @@ elseif( ${SCALAR_CORE} STREQUAL "cv32a60x" ) #TODO: Verify/Test support for floa
                                 ${RISCV_ZVE32X}
                                 ${RISCV_ZVE32F}
                                 ${RISCV_ZVFH}
+                                ${RISCV_ZVBB}
+                                ${RISCV_ZVBC}
                                 ${COMMIT_AND_ISSUE}
                                 -CFLAGS "-std=gnu++14 -O2")
 else()

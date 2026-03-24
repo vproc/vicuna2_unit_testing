@@ -24,5 +24,5 @@ else
 fi
 
 echo "making GCC for $1 $2"
-./configure --prefix=$INSTALL_PATH --with-arch=$1 --with-abi=$2
+./configure --prefix=$INSTALL_PATH --with-arch=$1 --with-abi=$2 --enable-multilib
 make -j8
