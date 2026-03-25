@@ -94,7 +94,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         .X_MISA      ( X_MISA      )
     ) vcore_xif ();
 
-    localparam OBI_CFG = obi_default_cfg(ADDR_W, MEM_W, OBI_ID_WIDTH, ObiMinimalOptionalConfig);
+    localparam OBI_CFG = obi_default_cfg(ADDR_W, VMEM_W, OBI_ID_WIDTH, ObiMinimalOptionalConfig);
     OBI_BUS #(
         .OBI_CFG     ( OBI_CFG   )
     ) vcore_obi_bus [MEM_PORTS-1:0] ();
