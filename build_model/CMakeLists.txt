@@ -25,8 +25,8 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_C_STANDARD 14)
 set(CMAKE_CXX_STANDARD 14)
 
-option(TRACE "Enable minimal VCD trace outputs" ON)
-option(TRACE_FULL "Enable FULL VCD trace outputs" ON) #TODO: prevent this option from being cached, force user to always manually enable it
+option(TRACE "Enable minimal VCD trace outputs" OFF)
+option(TRACE_FULL "Enable FULL VCD trace outputs" OFF) #TODO: prevent this option from being cached, force user to always manually enable it
 
 ########
 ## Import RTL configuration from here instead of command line.
