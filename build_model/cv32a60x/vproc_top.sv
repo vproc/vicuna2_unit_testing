@@ -71,13 +71,17 @@ module vproc_top
 
     output logic [31:0]        pend_vreg_wr_map_o,
 
-    output logic               mem_ireq_o,
-    output logic [31:0]        mem_iaddr_o,
-    output logic               mem_iid_o,
-    input  logic               mem_irvalid_i,
-    input  logic               mem_ierr_i,
-    input  logic [32  -1:0]    mem_irdata_i,
-    input  logic               mem_iid_i,
+    output logic               mem_ireq_o,    //fetch_req.req
+    output logic [31:0]        mem_iaddr_o,   //fetch_req.a.addr
+    output logic               mem_iid_o,     //fetch_req.a.aid
+    
+
+    input  logic               mem_irvalid_i, //fetch_resp.rvalid
+    input  logic               mem_ierr_i,    //fetch_resp.r.err
+    input  logic [32  -1:0]    mem_irdata_i,  //fetch_resp.r.rdata
+    input  logic               mem_iid_i,     //fetch_resp.r.rid
+    input  logic               mem_ignt_i,    //fetch_resp.gnt
+   
 
     output logic flush_o
     //////////////////////////////////////////
@@ -131,9 +135,9 @@ module vproc_top
       .obi_store_rsp_i  (obi_store_rsp),
 
       .obi_load_req_o   (obi_load_req),
-      .obi_load_rsp_i   (obi_load_rsp),
+      .obi_load_rsp_i   (obi_load_rsp)
       
-      .flush_o (flush_o)
+      //.flush_o (flush_o)
   );
 
   // -------------------
