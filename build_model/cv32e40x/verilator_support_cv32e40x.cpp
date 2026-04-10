@@ -124,7 +124,7 @@ void update_mem_load(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t 
             queue_data[0][i] |= mem[address+i];
         }
     }
-
+    
     queue_valid[0] = valid;
     queue_err[0]   = !valid;
 }
@@ -143,7 +143,7 @@ void update_mem_load(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t 
 *
 *   *mem           - pointer to memory space
 */
-void update_mem_write(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t mem_lat, uint32_t mem_size, unsigned char *model_data_o, unsigned char *model_be_o, bool *queue_valid, unsigned char *mem){
+void update_mem_write(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t mem_lat, uint32_t mem_size, unsigned char *model_data_o, unsigned char *model_be_o, bool *queue_valid, bool *queue_err, unsigned char *mem){
     if (req_valid) {
         if (address < mem_size)
         {
@@ -158,7 +158,8 @@ void update_mem_write(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t
         {
             fprintf(stderr, "ERROR: WRITE ATTEMPTED OUTSIDE OF VALID ADDRESS SPACE\n");
         }
-        //queue_valid[mem_lat-1] = true; //need to signal valid on store interface for accepted transaction.  Can always respond in 1 cycle due to store buffer
+        queue_valid[mem_lat-1] = true; //need to signal valid on store interface for accepted transaction.  Can always respond in 1 cycle due to store buffer
+        queue_err[mem_lat-1] = false;
     }
 }
 

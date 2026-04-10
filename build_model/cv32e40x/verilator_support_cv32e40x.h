@@ -127,7 +127,7 @@ void update_mem_load(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t 
 *
 *   *mem           - pointer to memory space
 */
-void update_mem_write(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t mem_lat, uint32_t mem_size, unsigned char *model_data_o, unsigned char *model_be_o, bool *queue_valid, unsigned char *mem);
+void update_mem_write(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t mem_lat, uint32_t mem_size, unsigned char *model_data_o, unsigned char *model_be_o, bool *queue_valid, bool *queue_err, unsigned char *mem);
 
 /*
 * Check for a write to memory mapped io.  Returns true and copies written data to *data_out if a valid write occurs to the selected address
