@@ -230,9 +230,9 @@ int main(int argc, char **argv) {
         //////////////////////////
 	for(int i = 0; i < mem_ports; i++){
 		//Update write interface
-		update_mem_write(top->mem_addr_o[i], (top->mem_req_o[i] && top->mem_we_o[i]), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_wdata_o[i]), (unsigned char*)&(top->mem_be_o[i]), 					mem_rvalid_queue[i], mem);
-		//Update read interface TODO - STALL IF (top->mem_req_o && !top->mem_we_o).  Original Vicuna also did not contain this condition  TODO: MEM_REQ_VALID NEEDS TO BE SIGNALLED for writes
-		update_mem_load(top->mem_addr_o[i], (top->mem_req_o[i]), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_rdata_i[i]), (bool*)&(top->mem_rvalid_i[i]), (bool*)&(top->mem_err_i[i]), mem_rdata_queue[i], mem_rvalid_queue[i], mem_err_queue[i], mem);
+        //Update read interface TODO - STALL IF (top->mem_req_o && !top->mem_we_o).  Original Vicuna also did not contain this condition  TODO: MEM_REQ_VALID NEEDS TO BE SIGNALLED for writes
+            update_mem_load(top->mem_addr_o[i], (top->mem_req_o[i] && !top->mem_we_o[i]), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_rdata_i[i]), (bool*)&(top->mem_rvalid_i[i]), (bool*)&(top->mem_err_i[i]), mem_rdata_queue[i], mem_rvalid_queue[i], mem_err_queue[i], mem);
+            update_mem_write(top->mem_addr_o[i], (top->mem_req_o[i] && top->mem_we_o[i]), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_wdata_o[i]), (unsigned char*)&(top->mem_be_o[i]), mem_rvalid_queue[i], mem_err_queue[i], mem);
         }
         
         //Update instruction memory interface
