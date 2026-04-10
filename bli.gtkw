@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Mon Mar 16 16:13:10 2026
+[*] Wed Mar 18 16:26:38 2026
 [*]
 [dumpfile] "/home/vboxuser/Desktop/vicuna2_ros_verilator/programs/build/uros_etiss/test_uros_etiss_sig.vcd"
-[dumpfile_mtime] "Mon Mar 16 16:11:10 2026"
-[dumpfile_size] 456987779
+[dumpfile_mtime] "Wed Mar 18 16:02:32 2026"
+[dumpfile_size] 5218658
 [savefile] "/home/vboxuser/Desktop/vicuna2_unit_testing/bli.gtkw"
-[timestart] 34367
+[timestart] 410562
 [size] 1848 902
 [pos] -1 -1
-*-4.839435 34375 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-5.839435 410638 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.vproc_top.
 [treeopen] TOP.vproc_top.v_core.
@@ -17,18 +17,19 @@
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.
-[treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.
+[treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.op_count[0].
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.genblk1[0].genblk1.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.genblk1[1].
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.genblk1[1].genblk1.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pipe_in_state_i.mode.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pipe_in_state_i.mode.alu.
+[treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.
+[treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.alt_count.
+[treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.count.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.mode.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.
-[treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].genblk1.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].genblk1.unit.
-[treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].genblk1.unit.genblk1.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].genblk1.unit.genblk1.alu.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].genblk1.unit.genblk1.alu.pipe_in_ctrl_i.mode.alu.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].genblk1.unit.genblk1.alu.state_ex1_q.
@@ -42,6 +43,7 @@
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[5].genblk1.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[5].genblk1.unit.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[5].genblk1.unit.genblk1.
+[treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[5].genblk1.unit.genblk1.sld.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[6].
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[6].genblk1.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[6].genblk1.unit.
@@ -50,44 +52,105 @@
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[6].genblk1.unit.genblk1.elem.pipe_in_ctrl_i.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[6].genblk1.unit.genblk1.elem.pipe_in_ctrl_i.mode.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.pipe_in_ctrl_i.
+[treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unpack.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.pipe_in_data_i.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.pipe_in_data_i.mode.
 [treeopen] TOP.vproc_top.v_core.genblk9[1].pipe.pipe_in_data_i.mode.alu.
+[treeopen] TOP.vproc_top.v_core.vregfile.
 [treeopen] TOP.vproc_top.v_core.vregfile.genblk1[0].
 [treeopen] TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.
 [treeopen] TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].
+[treeopen] TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[1].
+[treeopen] TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[2].
 [sst_width] 350
-[signals_width] 513
+[signals_width] 368
 [sst_expanded] 1
-[sst_vpaned_height] 238
+[sst_vpaned_height] 249
 @22
 TOP.vproc_top.v_core.genblk9[1].pipe.OP_CNT[31:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.RES_CNT[31:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.MAX_OP_W[31:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.MAX_RES_W[31:0]
-@c00200
+@800200
+-decoder
+@22
+TOP.vproc_top.v_core.dec.instr_i[31:0]
+@28
+TOP.vproc_top.v_core.dec.instr_valid_i
+@1000200
+-decoder
+@800200
+-pipeline_wrapper
+@28
+TOP.vproc_top.v_core.genblk9[1].pipe.unit_alu
+TOP.vproc_top.v_core.genblk9[1].pipe.unit_div
+TOP.vproc_top.v_core.genblk9[1].pipe.unit_elem
+TOP.vproc_top.v_core.genblk9[1].pipe.unit_fpu
+TOP.vproc_top.v_core.genblk9[1].pipe.unit_lsu
+TOP.vproc_top.v_core.genblk9[1].pipe.unit_mul
+@29
+TOP.vproc_top.v_core.genblk9[1].pipe.unit_sld
+@1000200
+-pipeline_wrapper
+@800200
+-pipeline_instr_state
+@28
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.instr_state_i[0][1:0]
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.instr_state_i[1][1:0]
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.instr_state_i[2][1:0]
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.instr_state_i[3][1:0]
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.instr_state_i[4][1:0]
+@22
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.id[3:0]
+@28
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_valid_q
+@22
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_next.id[3:0]
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.instr_done_id_o[3:0]
+@28
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.instr_done_valid_o
+@1000200
+-pipeline_instr_state
+@28
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[5].genblk1.unit.genblk1.unit_out_ctrl.alt_last_cycle
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[5].genblk1.unit.pipe_in_ctrl_i.alt_last_cycle
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[5].genblk1.unit.genblk1.sld.pipe_in_ctrl_i.alt_last_cycle
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[5].genblk1.unit.genblk1.sld.state_ex_d.alt_last_cycle
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[5].genblk1.unit.genblk1.sld.state_ex_valid_d
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unpack.pipe_out_valid_o
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unpack.stage_valid_q[4:0]
+@22
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unpack.stage_valid_d[4:0]
+@28
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[6].genblk1.unit.pipe_out_ready_i
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[6].genblk1.unit.pipe_in_ready_o
+@800200
 -pipeline
 @28
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pipe_in_ready_o
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pipe_in_valid_i
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pipe_in_state_i.mode.alu.opx2.cmp[2:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pipe_in_state_i.mode.alu.opx2.res[2:0]
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_ready
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_done
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_valid_q
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unpack_valid
+@200
+-count
 @22
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.count.val[7:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.count.part.low[3:0]
 @28
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.count.part.mul[2:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.count.part.sign
+@200
+-alt_count
 @22
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.alt_count.val[7:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.alt_count.part.low[3:0]
 @28
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.alt_count.part.mul[2:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.alt_count.part.sign
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.count_inc[1:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.alt_count_inc[1:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.alt_last_cycle
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.last_cycle
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_wait_alt_count_q
+TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.wait_alt_count_next
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.eew[1:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.emul[1:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.mode.lsu.alt_count_lsu_use
@@ -95,9 +158,6 @@ TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.mode.lsu.alt_eew[1
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.mode.lsu.alt_emul[1:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.init_addr
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.unit[2:0]
-@22
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.vl[6:0]
-@28
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.state_q.vl_0
 @22
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.op_load[5:0]
@@ -111,25 +171,20 @@ TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.op_vaddr[5][4:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.res_store
 @22
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.vreg_pend_rd_o[31:0]
-@1401200
+@1000200
 -pipeline
-@c00200
+@800200
 -Register
 @22
 TOP.vproc_top.v_core.vregfile.rd_addr[0][0][4:0]
 TOP.vproc_top.v_core.vregfile.rd_addr[1][0][4:0]
 TOP.vproc_top.v_core.vregfile.rd_addr[2][0][4:0]
-TOP.vproc_top.v_core.vregfile.rd_data[0][0][127:0]
-TOP.vproc_top.v_core.vregfile.rd_data[1][0][127:0]
-TOP.vproc_top.v_core.vregfile.rd_data[2][0][127:0]
 TOP.vproc_top.v_core.vregfile.wr_addr_i[0][4:0]
-TOP.vproc_top.v_core.vregfile.wr_be_i[0][15:0]
-TOP.vproc_top.v_core.vregfile.wr_data_i[0][127:0]
 @28
 TOP.vproc_top.v_core.vregfile.wr_we_i[0]
-@1401200
+@1000200
 -Register
-@800200
+@c00200
 -alu
 @22
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].genblk1.unit.genblk1.alu.ALU_OP_W[31:0]
@@ -295,7 +350,7 @@ TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].genblk
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].genblk1.unit.genblk1.alu.pipe_in_ctrl_i.mode.alu.opx1.shift[1:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].genblk1.unit.genblk1.alu.pipe_in_ctrl_i.mode.alu.opx2.cmp[2:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[1].genblk1.unit.genblk1.alu.pipe_in_ctrl_i.mode.alu.opx2.res[2:0]
-@1000200
+@1401200
 -alu
 @800200
 -pack
@@ -321,8 +376,6 @@ TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.pipe_in_res_flags_i[1
 @22
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.genblk1[1].genblk1.res_elem[3:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.MSK_MUL[1][31:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.msk_idx[1][6:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.msk_idx_next[1][6:0]
 @28
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.pipe_in_res_store_i[1:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.pipe_in_res_valid_i[1:0]
@@ -336,17 +389,7 @@ TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.genblk1[1].genblk1.re
 @28
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.pipe_in_res_flags_i[1].first_cycle
 @22
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.msk_buffer[0][15:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.msk_buffer_next[0][15:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.msk_buffer[1][15:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.msk_buffer_next[1][15:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.res_buffer[0][127:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.res_buffer_next[0][127:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.res_buffer[1][127:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.res_buffer_next[1][127:0]
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.vreg_wr_addr_o[4:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.vreg_wr_be_o[15:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.vreg_wr_data_o[127:0]
 @28
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.vreg_wr_valid_o
 @1000200
@@ -355,11 +398,6 @@ TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.pack.vreg_wr_valid_o
 -unpack
 @28
 TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unpack.OP_MASK[5:0]
-@22
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unpack.op_buffer[4][127:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unpack.op_buffer_next[4][127:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unpack.op_buffer[5][127:0]
-TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unpack.op_buffer_next[5][127:0]
 @1401200
 -unpack
 @c00200
@@ -409,41 +447,6 @@ TOP.vproc_top.v_core.genblk9[1].pipe.genblk2.pipeline.unit_mux.genblk1[6].genblk
 -elem
 @800200
 -ram
-@22
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[0][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[1][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[2][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[3][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[4][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[5][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[6][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[7][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[8][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[9][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[10][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[11][127:0]
-@23
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[12][127:0]
-@22
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[13][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[14][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[15][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[16][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[17][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[18][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[19][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[20][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[21][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[22][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[23][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[24][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[25][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[26][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[27][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[28][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[29][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[30][127:0]
-TOP.vproc_top.v_core.vregfile.genblk1[0].genblk1.genblk1[0].ram[31][127:0]
 @1000200
 -ram
 [pattern_trace] 1
