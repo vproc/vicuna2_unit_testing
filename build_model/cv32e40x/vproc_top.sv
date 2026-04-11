@@ -316,7 +316,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
 
     // Allow for vector loads/stores to be misaligned with respect to VMEM_W
     `ifdef FORCE_ALIGNED_READS
-    localparam bit [VLSU_FLAGS_W-1:0] VLSU_FLAGS = (VLSU_FLAGS_W'(1) << VLSU_ALIGNED_UNITSTRIDE);
+    localparam bit [VLSU_FLAGS_W-1:0] VLSU_FLAGS = (VLSU_FLAGS_W'(0) << VLSU_ALIGNED_UNITSTRIDE);
     `else
     localparam bit [VLSU_FLAGS_W-1:0] VLSU_FLAGS = (VLSU_FLAGS_W'(0) << VLSU_ALIGNED_UNITSTRIDE);
     `endif
