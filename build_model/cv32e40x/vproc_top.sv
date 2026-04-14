@@ -865,20 +865,25 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
     for(genvar i = 0; i < MEM_PORTS; i++) begin
         assign vdata_gnt[i] = data_gnt[i] & vdata_req[i];
     end
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            sdata_waiting   <= 1'b0;
-            sdata_wait_addr <= '0;
-        end else begin
-            if (sdata_gnt) begin
-                sdata_waiting   <= 1'b1;
-                sdata_wait_addr <= sdata_addr;
-            end
-            else if (sdata_rvalid) begin
-                sdata_waiting <= 1'b0;
-            end
-        end
-    end
+
+
+    vproc_queue #(
+        .WIDTH        ( 1                                            	 	          ),
+        .DEPTH        ( 2                                                             ), // cv32 is configured to send out max 2 requests as default
+        .FLOW         ( 1'b1                                                          )
+    ) s_wait_id_queue (
+        .clk_i        ( clk_i                                                         ),
+        .async_rst_ni ( rst_ni                                                        ),
+        .sync_rst_ni  ( sync_rst_n                                                    ),
+        .enq_ready_o  (                                                               ),
+        .enq_valid_i  ( sdata_gnt                                                     ),
+        .enq_data_i   ( sdata_addr                                                    ),
+        .deq_ready_i  ( sdata_rvalid                                                ),
+        .deq_valid_o  ( sdata_waiting                                                 ),
+        .deq_data_o   ( sdata_wait_addr                                               ),
+        .flags_any_o  (                                                               ),
+        .flags_all_o  (                                                               )
+    );
 
     vproc_queue #(
         .WIDTH        ( 1                                            	 	          ),
@@ -891,7 +896,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         .enq_ready_o  (                                                               ),
         .enq_valid_i  ( vdata_gnt[0]                                                  ),
         .enq_data_i   (                                                               ),
-        .deq_ready_i  ( vdata_rvalid[0]                                               ),
+        .deq_ready_i  ( vdata_rvalid[0]                                              ),
         .deq_valid_o  ( vdata_waiting                                                 ),
         .deq_data_o   (                                                               ),
         .flags_any_o  (                                                               ),
