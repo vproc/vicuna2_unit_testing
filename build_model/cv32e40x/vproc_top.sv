@@ -36,7 +36,6 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         input  logic [32  -1:0]    mem_irdata_i
               
     );
-
     if ((MEM_W & (MEM_W - 1)) != 0 || MEM_W < 32) begin
         $fatal(1, "The memory bus width MEM_W must be at least 32 and a power of two.  ",
                   "The current value of %d is invalid.", MEM_W);
@@ -835,6 +834,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         // TODO: data_req_id[0] = ; for cva core
         
         `ifdef FORCE_ALIGNED_READS
+        data_addr[0]  = {sdata_addr[31:2], 2'b00};
         data_be[0]    = {{(VMEM_W-32){1'b0}}, sdata_be} << (sdata_addr[$clog2(VMEM_W/8)-1:0] & {{$clog2(VMEM_W/32){1'b1}}, 2'b00});
         data_wdata[0] = '0;
         for (int i = 0; i < VMEM_W / 32; i++) begin

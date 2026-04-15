@@ -27,6 +27,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 option(TRACE "Enable minimal VCD trace outputs" OFF)
 option(TRACE_FULL "Enable FULL VCD trace outputs" OFF) #TODO: prevent this option from being cached, force user to always manually enable it
+option(OLD_VICUNA "Old vicuna without vl abort" ON)
+option(FORCE_ALIGNED_READS "Forces aligned reads for cv32 and vproc" ON)
 
 ########
 ## Import RTL configuration from here instead of command line.
