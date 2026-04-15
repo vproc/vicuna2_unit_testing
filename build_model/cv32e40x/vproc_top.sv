@@ -314,7 +314,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
     logic [OBI_ID_WIDTH-1:0] vdata_res_id [MEM_PORTS-1:0];
 
     // Allow for vector loads/stores to be misaligned with respect to VMEM_W
-    `ifdef FORCE_ALIGNED_READS
+    `ifdef FORCE_ALIGNED_READS // not needed anymore since scratch is aligning already
     localparam bit [VLSU_FLAGS_W-1:0] VLSU_FLAGS = (VLSU_FLAGS_W'(0) << VLSU_ALIGNED_UNITSTRIDE);
     `else
     localparam bit [VLSU_FLAGS_W-1:0] VLSU_FLAGS = (VLSU_FLAGS_W'(0) << VLSU_ALIGNED_UNITSTRIDE);
