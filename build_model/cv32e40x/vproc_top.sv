@@ -834,7 +834,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         // TODO: data_req_id[0] = ; for cva core
         
         `ifdef FORCE_ALIGNED_READS
-        data_addr[0]  = {sdata_addr[31:2], 2'b00};
+        data_addr[0]  =  {sdata_addr[31:$clog2(VMEM_W/8)], {$clog2(VMEM_W/8){1'b0}}};
         data_be[0]    = {{(VMEM_W-32){1'b0}}, sdata_be} << (sdata_addr[$clog2(VMEM_W/8)-1:0] & {{$clog2(VMEM_W/32){1'b1}}, 2'b00});
         data_wdata[0] = '0;
         for (int i = 0; i < VMEM_W / 32; i++) begin
@@ -868,7 +868,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
 
 
     vproc_queue #(
-        .WIDTH        ( 1                                            	 	          ),
+        .WIDTH        ( $bits(sdata_wait_addr)                                        ),
         .DEPTH        ( 2                                                             ), // cv32 is configured to send out max 2 requests as default
         .FLOW         ( 1'b1                                                          )
     ) s_wait_id_queue (
@@ -878,7 +878,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         .enq_ready_o  (                                                               ),
         .enq_valid_i  ( sdata_gnt                                                     ),
         .enq_data_i   ( sdata_addr                                                    ),
-        .deq_ready_i  ( sdata_rvalid                                                ),
+        .deq_ready_i  ( sdata_rvalid                                                  ),
         .deq_valid_o  ( sdata_waiting                                                 ),
         .deq_data_o   ( sdata_wait_addr                                               ),
         .flags_any_o  (                                                               ),
