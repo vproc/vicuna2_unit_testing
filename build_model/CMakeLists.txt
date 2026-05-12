@@ -442,7 +442,8 @@ if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
                                 -Wno-WIDTHCONCAT
                                 -Wno-ENUMVALUE 
                                 -Wno-SELRANGE -Wno-LATCH #These might be caused from not connecting everything properly
-                                -Wno-IMPLICITSTATIC      
+                                -Wno-IMPLICITSTATIC
+                                -Wno-IEEEMAYDEPRECATE
                                 #+define+COREV_ASSERT_OFF       #Fixes UVM error with CV32E40X (Needed when not using -DVPROC_SVA)
                                 ${TRACE_FLAG} 
                                 --assert -DVPROC_SVA
