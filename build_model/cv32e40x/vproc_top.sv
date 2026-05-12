@@ -763,7 +763,7 @@ module vproc_top import vproc_pkg::*; #(
         assign vdata_req_id               = '0;
     end else begin
         assign vdata_req                  = vcore_xif.mem_valid;
-        assign vcore_xif.mem_ready        = vdata_gnt;
+        assign vcore_xif.mem_ready        = 1'b1; //mem always ready in this configuration
         assign vdata_addr                 = vcore_xif.mem_req.addr;
         assign vdata_we                   = vcore_xif.mem_req.we;
         assign vdata_be                   = vcore_xif.mem_req.be;
