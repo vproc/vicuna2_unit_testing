@@ -32,14 +32,7 @@ cd scripts
 #   GCC setup  Only one version needed with support for all valid instructions-> asm tests will only be generated for these
 ######
 
-# ./build_gcc.sh rv32im ilp32
-# ./build_gcc.sh rv32imf ilp32f
-# ./build_gcc.sh rv32imf_zfh ilp32f
-# ./build_gcc.sh rv32im_zve32x ilp32
-# ./build_gcc.sh rv32imf_zve32f ilp32f
-# ./build_gcc.sh rv32imf_zfh_zve32f_zvfh ilp32f
-# ./build_gcc.sh rv32im_zve32x ilp32
-./build_gcc.sh rv32im_zfh_zve32f_zvfh_zvbb ilp32f
+./build_gcc.sh rv32imf_zfh_zve32f_zvfh_zvbb ilp32f
 
 ######
 # Download Spike source with ChipsAlliance edits
