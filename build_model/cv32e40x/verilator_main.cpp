@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
     //even though known instruction interface width of 32 bits, malloc like this for compatability with memory management helper functions
     for(int queue_pos = 0; queue_pos < mem_latency; queue_pos++)
     {
-        mem_idata_queue[queue_pos] = (unsigned char *)malloc(sizeof(unsigned char) * 32/8);
+        mem_idata_queue[queue_pos] = (unsigned char *)malloc(sizeof(unsigned char) * mem_w/8);
     }
 
     Vvproc_top *top = new Vvproc_top;
@@ -236,7 +236,7 @@ int main(int argc, char **argv) {
         }
         
         //Update instruction memory interface
-		update_mem_load(top->mem_iaddr_o, top->mem_ireq_o, 32, mem_latency, mem_sz, (unsigned char*)&(top->mem_irdata_i), (bool*)&(top->mem_irvalid_i), (bool*)&(top->mem_ierr_i), mem_idata_queue, mem_ivalid_queue, mem_ierr_queue, mem);
+		update_mem_load(top->mem_iaddr_o, top->mem_ireq_o, mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_irdata_i), (bool*)&(top->mem_irvalid_i), (bool*)&(top->mem_ierr_i), mem_idata_queue, mem_ivalid_queue, mem_ierr_queue, mem);
 
 
         top->eval();

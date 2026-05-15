@@ -33,7 +33,7 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         output logic [31:0]        mem_iaddr_o,
         input  logic               mem_irvalid_i,
         input  logic               mem_ierr_i,
-        input  logic [32  -1:0]    mem_irdata_i
+        input  logic [MEM_W-1:0]   mem_irdata_i
               
     );
     if ((MEM_W & (MEM_W - 1)) != 0 || MEM_W < 32) begin
@@ -866,6 +866,23 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
         assign vdata_gnt[i] = data_gnt[i] & vdata_req[i];
     end
 
+    vproc_queue #(
+        .WIDTH        ( $bits(instr_wait_addr)                                        ),
+        .DEPTH        ( 2                                                             ), // cv32 is configured to send out max 2 requests as default
+        .FLOW         ( 1'b1                                                          )
+    ) i_wait_id_queue (
+        .clk_i        ( clk_i                                                         ),
+        .async_rst_ni ( rst_ni                                                        ),
+        .sync_rst_ni  ( 1'b1                                                          ), // sync_rst_n
+        .enq_ready_o  (                                                               ),
+        .enq_valid_i  ( imem_gnt                                                      ),
+        .enq_data_i   ( instr_addr                                                    ),
+        .deq_ready_i  ( imem_rvalid                                                   ),
+        .deq_valid_o  (                                                               ),
+        .deq_data_o   ( instr_wait_addr                                               ),
+        .flags_any_o  (                                                               ),
+        .flags_all_o  (                                                               )
+    );
 
     vproc_queue #(
         .WIDTH        ( $bits(sdata_wait_addr)                                        ),
@@ -931,13 +948,22 @@ module vproc_top import vproc_pkg::*, obi_pkg::*; #(
     logic             imem_err;
     logic             i_miss /* verilator public */;
     logic             i_hit  /* verilator public */;
-    
-    assign imem_req     = instr_req;
-    assign imem_addr    = instr_addr;
-    assign instr_gnt    = imem_gnt;
-    assign instr_rvalid = imem_rvalid;
-    assign instr_rdata  = imem_rdata[31:0];
-    assign instr_err    = imem_err;
+    logic [31:0]      instr_wait_addr;
+
+    always_comb begin
+        imem_req  = instr_req;
+        instr_gnt = imem_gnt;
+        instr_rvalid = imem_rvalid;
+        instr_err    = imem_err;
+
+        `ifdef FORCE_ALIGNED_READS
+        imem_addr  =  {instr_addr[31:$clog2(VMEM_W/8)], {$clog2(VMEM_W/8){1'b0}}};
+        instr_rdata  = imem_rdata[(instr_wait_addr[$clog2(VMEM_W)-1:0] & {3'b000, {($clog2(VMEM_W/8)-2){1'b1}}, 2'b00})*8 +: 32];
+        `else
+        imem_addr = instr_addr;
+        instr_rdata  = imem_rdata[31:0];
+        `endif
+    end
 
 
     // Memory Interface signals D-DATA
