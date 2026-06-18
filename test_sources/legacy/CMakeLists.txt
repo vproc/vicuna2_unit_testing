@@ -35,3 +35,4 @@ if (RISCV_ZVFH)
   add_subdirectory(zvfh)
 endif()
 
+add_subdirectory(custom)

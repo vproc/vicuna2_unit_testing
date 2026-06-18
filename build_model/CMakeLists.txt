@@ -443,7 +443,6 @@ if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
                                 -Wno-ENUMVALUE 
                                 -Wno-SELRANGE -Wno-LATCH #These might be caused from not connecting everything properly
                                 -Wno-IMPLICITSTATIC
-                                -Wno-IEEEMAYDEPRECATE
                                 #+define+COREV_ASSERT_OFF       #Fixes UVM error with CV32E40X (Needed when not using -DVPROC_SVA)
                                 ${TRACE_FLAG} 
                                 --assert -DVPROC_SVA
@@ -458,6 +457,7 @@ if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
                                 ${RISCV_ZVFH}
                                 ${RISCV_ZVBB}
                                 ${RISCV_ZVBC}
+                                "-DVECTOR_CUSTOM"
                                 -CFLAGS "-std=gnu++14 -O2")
 
 elseif( ${SCALAR_CORE} STREQUAL "cv32a60x" ) #TODO: Verify/Test support for floating point vector systems with this core.  Currently, only Zve32x tested.
