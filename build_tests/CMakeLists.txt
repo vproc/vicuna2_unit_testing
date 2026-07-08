@@ -51,7 +51,10 @@ message("Selected RISCV_ARCH = ${RISCV_ARCH}")
 message("Selected VREG_W = ${VREG_W}")
 message("Selected VMEM_W = ${VMEM_W}")
 set(MEM_W ${VMEM_W})
+set(ENV{MEM_W} ${VMEM_W})
 message("Selected MEM_W = ${MEM_W}")
+set(MEM_PORTS ${VMEM_PORTS})
+message("Selected MEM_PORTS = ${MEM_PORTS}")
 
 
 #####

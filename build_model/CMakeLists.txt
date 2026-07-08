@@ -27,6 +27,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 option(TRACE "Enable minimal VCD trace outputs" OFF)
 option(TRACE_FULL "Enable FULL VCD trace outputs" OFF) #TODO: prevent this option from being cached, force user to always manually enable it
+option(OLD_VICUNA "Old vicuna without vl abort" ON)
+option(FORCE_ALIGNED_READS "Forces aligned reads for cv32 and vproc" ON)
 
 ########
 ## Import RTL configuration from here instead of command line.
@@ -37,9 +39,13 @@ message("Selected SCALAR_CORE = ${SCALAR_CORE}")
 set(ENV{VPROC_PIPELINES} ${VPROC_PIPELINES})
 message("Selected VPROC_PIPELINES = ${VPROC_PIPELINES}")
 message("Selected RISCV_ARCH = ${RISCV_ARCH}")
+set(ENV{VREG_W} ${VREG_W})
 message("Selected VREG_W = ${VREG_W}")
 set(MEM_W ${VMEM_W})
+set(ENV{MEM_W} ${VMEM_W})
 message("Selected MEM_W = ${MEM_W}")
+set(MEM_PORTS ${VMEM_PORTS})
+message("Selected MEM_PORTS = ${MEM_PORTS}")
 
 set(MEM_SZ 4194304)
 
@@ -401,7 +407,7 @@ if(TRACE)
     set(TRACE TRACE)
     
     if(TRACE_FULL)
-        set(TRACE_FLAG  ) #no --trace-depth flag defaults to entire model
+        set(TRACE_FLAG  --trace-structs) #no --trace-depth flag defaults to entire model
     else()
         set(TRACE_FLAG --trace-depth 2)
     endif()
@@ -446,7 +452,7 @@ if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
                                 #+define+COREV_ASSERT_OFF       #Fixes UVM error with CV32E40X (Needed when not using -DVPROC_SVA)
                                 ${TRACE_FLAG} 
                                 --assert -DVPROC_SVA
-                                -GMEM_W=${MEM_W} -GVMEM_W=${VMEM_W}
+                                -GMEM_W=${MEM_W} -GVMEM_W=${VMEM_W} -GMEM_PORTS=${MEM_PORTS}
                                 ${VICUNA_MODE}
                                 ${READ_MODE}
                                 ${XIF_FLAG}
