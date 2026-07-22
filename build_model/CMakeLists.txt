@@ -449,6 +449,7 @@ if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
                                 -Wno-ENUMVALUE 
                                 -Wno-SELRANGE -Wno-LATCH #These might be caused from not connecting everything properly
                                 -Wno-IMPLICITSTATIC
+                                -Wno-IEEEMAYDEPRECATE
                                 #+define+COREV_ASSERT_OFF       #Fixes UVM error with CV32E40X (Needed when not using -DVPROC_SVA)
                                 ${TRACE_FLAG} 
                                 --assert -DVPROC_SVA
@@ -480,7 +481,8 @@ elseif( ${SCALAR_CORE} STREQUAL "cv32a60x" ) #TODO: Verify/Test support for floa
                                 -Wno-WIDTHCONCAT
                                 -Wno-ENUMVALUE 
                                 -Wno-SELRANGE -Wno-LATCH #These might be caused from not connecting everything properly
-                                -Wno-IMPLICITSTATIC      
+                                -Wno-IMPLICITSTATIC
+                                -Wno-IEEEMAYDEPRECATE
                                 #+define+COREV_ASSERT_OFF       #Fixes UVM error with CV32E40X (Needed when not using -DVPROC_SVA)
                                 #--clk clk_i
                                 ${TRACE_FLAG} 
