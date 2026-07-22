@@ -450,6 +450,7 @@ if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
                                 -Wno-SELRANGE -Wno-LATCH #These might be caused from not connecting everything properly
                                 -Wno-IMPLICITSTATIC
                                 #+define+COREV_ASSERT_OFF       #Fixes UVM error with CV32E40X (Needed when not using -DVPROC_SVA)
+                                -Wno-IEEEMAYDEPRECATE
                                 ${TRACE_FLAG} 
                                 --assert -DVPROC_SVA
                                 -GMEM_W=${MEM_W} -GVMEM_W=${VMEM_W} -GMEM_PORTS=${MEM_PORTS}
@@ -483,6 +484,7 @@ elseif( ${SCALAR_CORE} STREQUAL "cv32a60x" ) #TODO: Verify/Test support for floa
                                 -Wno-IMPLICITSTATIC      
                                 #+define+COREV_ASSERT_OFF       #Fixes UVM error with CV32E40X (Needed when not using -DVPROC_SVA)
                                 #--clk clk_i
+                                -Wno-IEEEMAYDEPRECATE
                                 ${TRACE_FLAG} 
                                 --assert -DVPROC_SVA
                                 -GMEM_W=${MEM_W} -GVMEM_W=${VMEM_W}
