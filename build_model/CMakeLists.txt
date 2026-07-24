@@ -487,7 +487,7 @@ elseif( ${SCALAR_CORE} STREQUAL "cv32a60x" ) #TODO: Verify/Test support for floa
                                 #--clk clk_i
                                 ${TRACE_FLAG} 
                                 --assert -DVPROC_SVA
-                                -GMEM_W=${MEM_W} -GVMEM_W=${VMEM_W}
+                                -GMEM_W=${MEM_W} -GVMEM_W=${VMEM_W} -GMEM_PORTS=${MEM_PORTS}
                                 ${VICUNA_MODE}
                                 ${READ_MODE}
                                 ${XIF_FLAG}
