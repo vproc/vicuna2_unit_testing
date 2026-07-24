@@ -20,10 +20,10 @@ int main(int argc, char **argv) {
     //////////////////////////
     //Check validity and parse input arguments
     //////////////////////////
-    if (argc != 10 && argc != 11) {
-        fprintf(stderr, "ERROR: Correct Usage: %s PROG_PATHS_LIST MEM_PORTS MEM_W MEM_SZ MEM_LATENCY EXTRA_CYCLES TEST_NAME VREG_W NUM_TEST_CASES [WAVEFORM_FILE]\n", argv[0]);
+    if (argc != 10 && argc != 12 && argc != 14) {
+        fprintf(stderr, "ERROR: Correct Usage: %s PROG_PATHS_LIST MEM_PORTS MEM_W MEM_SZ MEM_LATENCY EXTRA_CYCLES TEST_NAME VREG_W NUM_TEST_CASES [--trace WAVEFORM_FILE] [--commit COMMIT_PATH]\n", argv[0]);
         return 1;
-    }  
+    }
 
     int mem_ports, mem_w, mem_sz, mem_latency, extra_cycles, num_cases;
     {
@@ -69,23 +69,6 @@ int main(int argc, char **argv) {
         return 2;
     }
 
-
-    //////////////////////////
-    //Init regfile logs
-    //////////////////////////
-
-    /*Log File for Scalar Registers*/
-    std::string filename=(std::string(argv[7])+std::string("_xreg_commits_verilator.txt"));
-    FILE *fxreglog = fopen(filename.c_str(), "w");
-
-    /*Log File for Vector Registers.  Separate log because actual writes to VREGs might be out of order relative to the Xregs.  Should NOT be out of order relative to themselves.*/
-    filename=(std::string(argv[7])+std::string("_vreg_commits_verilator.txt"));
-    FILE *fvreglog = fopen(filename.c_str(), "w");
-
-    /*Log File for Scalar Floating Point Registers*/
-    filename=(std::string(argv[7])+std::string("_freg_commits_verilator.txt"));
-    FILE *ffreglog = fopen(filename.c_str(), "w");
-
     //////////////////////////
     //Allocate memory latency buffers
     //////////////////////////
@@ -121,12 +104,38 @@ int main(int argc, char **argv) {
     //Setup vcd trace file
     //////////////////////////
     VerilatedTrace_t *tfp = NULL;
-    if (argc == 11) {
-        #ifdef TRACE_VCD
-        tfp = new VerilatedTrace_t;
-        top->trace(tfp, 99);  // Trace 99 levels of hierarchy
-        tfp->open(argv[10]);
-        #endif
+    if (argc >= 12){
+        if((strcmp(argv[10], "--trace")) == 0) {
+            tfp = new VerilatedTrace_t;
+            top->trace(tfp, 99);  // Trace 99 levels of hierarchy
+            tfp->open(argv[11]);
+        }
+    }
+    if (argc >= 14){
+        if((strcmp(argv[12], "--trace")) == 0) {
+            tfp = new VerilatedTrace_t;
+            top->trace(tfp, 99);  // Trace 99 levels of hierarchy
+            tfp->open(argv[13]);
+        }
+    }
+
+    //////////////////////////
+    //Init regfile logs
+    //TODO: Log commits based on paths for cv32e40x
+    //////////////////////////
+    FILE *fxreglog = NULL;
+    /*Log File for Scalar Registers*/
+    if (argc >= 12){
+        if((strcmp(argv[10], "--commit") == 0)) {
+            std::string filename=(std::string(argv[11])+std::string(argv[7])+std::string("_xreg_commits_verilator.txt"));
+            fxreglog = fopen(filename.c_str(), "w");
+        }
+    } 
+    if (argc >= 14){
+        if((strcmp(argv[12], "--commit") == 0)) {
+            std::string filename=(std::string(argv[13])+std::string(argv[7])+std::string("_xreg_commits_verilator.txt"));
+            fxreglog = fopen(filename.c_str(), "w");
+        }
     }
 
 
@@ -354,9 +363,17 @@ int main(int argc, char **argv) {
     free(mem_idata_queue);
 
     fclose(fprogs);
-    fclose(fxreglog);
-    fclose(fvreglog);
-    fclose(ffreglog);
+    if (tfp != NULL)
+    {
+        tfp->close();
+    }
+
+    if (fxreglog != NULL)
+    {
+        fclose(fxreglog);
+    }
+    // fclose(fvreglog);
+    // fclose(ffreglog);
 
     return exit_code;
 }

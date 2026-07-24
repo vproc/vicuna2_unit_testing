@@ -37,15 +37,17 @@ macro(add_unit_test TEST_NAME)
                     OUTPUT_VARIABLE TEST_CASE_NUM)
     #If trace option is selected, provide the paths for the .vcd trace files.          
     if(TRACE)
-        set(VCD_TRACE_ARGS "${BUILD_DIR}/Testing/last_test_sig.vcd")
+        set(VCD_TRACE_FLAG "--trace")
+        set(VCD_TRACE_ARG "${BUILD_DIR}/vector-tests/test_${TEST_NAME}_sig.vcd")
     else()
-        set(VCD_TRACE_ARGS "")
+        set(VCD_TRACE_FLAG "")
+        set(VCD_TRACE_ARG "")
     endif()
 	              
 
     #Add Test
     add_test(NAME ${TEST_NAME}
-             COMMAND ${MODEL_DIR}/verilated_model ${BUILD_DIR}/vector-tests/prog_${TEST_NAME}.txt ${MEM_PORTS} ${MEM_W} 4194304 ${MEM_LATENCY} 1 ${TEST_NAME} ${VREG_W} ${TEST_CASE_NUM} ${VCD_TRACE_ARGS}
+             COMMAND ${MODEL_DIR}/verilated_model ${BUILD_DIR}/vector-tests/prog_${TEST_NAME}.txt ${MEM_PORTS} ${MEM_W} 4194304 ${MEM_LATENCY} 1 ${TEST_NAME} ${VREG_W} ${TEST_CASE_NUM} ${VCD_TRACE_FLAG} ${VCD_TRACE_ARG}
              WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
     message(STATUS "Successfully added ${TEST_NAME}")
