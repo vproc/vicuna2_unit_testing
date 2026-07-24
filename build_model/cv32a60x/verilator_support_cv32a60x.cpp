@@ -88,41 +88,10 @@ void advance_cycle_half(Vvproc_top *top, bool val){
 *   *mem           - pointer to memory space
 */
 void update_mem_load(Vvproc_top *top, uint32_t address, bool req_valid, bool req_write, bool req_src, uint32_t mem_w, uint32_t mem_lat, uint32_t mem_size, unsigned char *model_data_i, bool *model_valid_i, bool *model_err_i, bool *model_src_i, unsigned char **queue_data, bool *queue_valid, bool **queue_meta, unsigned char *mem){
-    // if (req_valid)
-    // {
-    //     fprintf(stderr, "Mem Access\n");
-    //     fprintf(stderr, "ADDR = %X     SRC= %d    R/W=%d\n", address, req_src, req_write);
-    // }
-    // Put read data on the processor read port.
-    for (int i = 0; i < mem_w/8; i++)
-    {
-        model_data_i[i]  = queue_data[mem_lat-1][i];
-    }
-    *model_valid_i = queue_valid[mem_lat-1];
-    *model_err_i   = queue_meta[mem_lat-1][0];
-    if (model_src_i) 
-    {
-        *model_src_i   = queue_meta[mem_lat-1][1];
-    }
 
-    //Next, advance fifo buffers by one cycle
-    for (int i = mem_lat-1; i > 0; i--) {
-        
-        for (int j = 0; j < mem_w/8; j++)
-        {
-            queue_data[i][j] = queue_data[i-1][j];
-        }
-        queue_valid[i] = queue_valid[i-1];
-        
-        for (int j = 0; j < 2; j++)
-        {   
-            queue_meta[i][j]   = queue_meta[i-1][j];
-            
-        }
-    }
-
+    uint32_t address_mask = address & 0x7FFFFFFF;
     //Next evaluate an outstanding request and put at the end of the buffer.
-    volatile bool valid = (address < mem_size) & req_valid;
+    volatile bool valid = (address_mask < mem_size) & req_valid;
 
     //set new queue entry to zero
     for (int i = 0; i < mem_w/8; i++)
@@ -133,14 +102,18 @@ void update_mem_load(Vvproc_top *top, uint32_t address, bool req_valid, bool req
     {
         //Copy each valid byte into buffer
         for (int i = 0; i < mem_w/8; i++) {
-            queue_data[0][i] |= mem[address+i];
+            queue_data[0][i] |= mem[address_mask+i];
             //queue_data[0][i] |= 0;
         }
+        queue_valid[0] = req_valid;
+        queue_meta[0][0]   = false; //never an error (conflicts with write signal)
+        queue_meta[0][1]   = req_src;
+        queue_meta[0][2]   = 0;
+    } else if (req_valid){
+            fprintf(stderr, "ERROR: READ ATTEMPTED OUTSIDE OF VALID ADDRESS SPACE\n");
     }
 
-    queue_valid[0] = req_valid;
-    queue_meta[0][0]   = !valid;
-    queue_meta[0][1]   = req_src;
+
 }
 
 /*
@@ -157,23 +130,42 @@ void update_mem_load(Vvproc_top *top, uint32_t address, bool req_valid, bool req
 *
 *   *mem           - pointer to memory space
 */
-void update_mem_write(uint32_t address, bool req_valid, uint32_t mem_w, uint32_t mem_lat, uint32_t mem_size, unsigned char *model_data_o, unsigned char *model_be_o, bool *queue_valid, unsigned char *mem){
+void update_mem_write(Vvproc_top *top, uint32_t address, bool req_valid, bool req_src, uint32_t mem_w, uint32_t mem_lat, uint32_t mem_size, unsigned char *model_data_o, unsigned char *model_be_o, bool *mem_w_valid_i, bool *queue_valid, bool **queue_meta, unsigned char *mem){
+    for (int i = mem_lat-1; i > 0; i--) {
+        queue_valid[i] = queue_valid[i-1];
+    }
+    uint32_t address_mask = address & 0x7FFFFFFF;
     if (req_valid) {
-        if (address < mem_size)
+        if (address_mask < mem_size)
         {
             for (int i = 0; i < mem_w / 8; i++) {
                 if ((model_be_o[i/8] & (1<<(i%8)))) {
-                    mem[address+i] = model_data_o[i];
+                    mem[address_mask+i] = model_data_o[i];
                 }
-                
             }
         } 
         else
         {
             fprintf(stderr, "ERROR: WRITE ATTEMPTED OUTSIDE OF VALID ADDRESS SPACE\n");
         }
-        queue_valid[mem_lat-1] = true; //need to signal valid on store interface for accepted transaction.  Can always respond in 1 cycle due to store buffer
+        //queue_valid[mem_lat-1] = true; //need to signal valid on store interface for accepted transaction.  Can always respond in 1 cycle due to store buffer - TODO: signal over mem_w_valid_i, but needs to be delayed 1 cycle
+        // if (!req_src) //only scalar interface uses mem_w_valid, vector uses mem_r_valid even for stores TODO: Refactor this (separate interfaces completely?)
+        // {
+        //     //*mem_w_valid_i = 1;
+        //     //top->mem_src_i = 0;
+        //     //top->mem_id_i = top->mem_id_o;
+        // } else {
+        //     //top->mem_rvalid_i = 1;
+        //     //top->mem_src_i = 1;
+        //     //top->mem_id_i = top->mem_id_o;
+        // }
+        queue_valid[0] = req_valid; //on successful write, override initial values from mem_load
+        queue_meta[0][0]   = false; //never an error (conflicts with write signal)
+        queue_meta[0][1]   = req_src;
+        queue_meta[0][2]   = 1;
     }
+    
+    
 }
 
 /*

@@ -281,7 +281,7 @@ set(CV32A60X_SOURCE ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncD
                     ${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/cf_math_pkg.sv #packages
-                    ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_pkg.sv
+                    #${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_pkg.sv
                     ${CVA6_REPO_DIR}/core/include/config_pkg.sv
                     ${CVA6_REPO_DIR}/core/include/cv32a60x_config_pkg.sv
                     ${CVA6_REPO_DIR}/core/include/riscv_pkg.sv
@@ -325,7 +325,7 @@ set(CV32A60X_SOURCE ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncD
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_atop_resolver.sv  #OBI
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_demux.sv
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_err_sbr.sv
-                    ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_intf.sv
+                    #${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_intf.sv
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_mux.sv
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_sram_shim.sv
                     ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_xbar.sv
@@ -384,10 +384,10 @@ set(CV32A60X_SOURCE ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncD
     
 
 set(CV32A60X_INCLUDE ${CVA6_REPO_DIR}/core/include/
-                     ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/include/
                      #${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/include/ #included in Vicuna repo
                      #${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/     #
                      ${CVA6_REPO_DIR}/vendor/pulp-platform/axi/include/
+                     ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/include/
                      ${CVA6_REPO_DIR}/common/local/util/
                      ${HPDCACHE_DIR}/rtl/include)
 
@@ -435,8 +435,8 @@ target_sources(verilated_model PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/verilator_main.cpp)
 
 if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
-    verilate(verilated_model SOURCES  ${CV32E40X_SOURCE} ${VICUNA_FPU_SRCS} ${VICUNA_SRCS} ${FPU_SS_SOURCE} ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/vproc_top.sv
-                INCLUDE_DIRS  ${CV32E40X_INCLUDE} ${VICUNA_FPU_INCS} ${VICUNA_INCS} ${FPU_SS_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR}
+    verilate(verilated_model SOURCES  ${DESIGN_SRC_OBI} ${CV32E40X_SOURCE} ${VICUNA_FPU_SRCS} ${VICUNA_SRCS} ${FPU_SS_SOURCE} ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/vproc_top.sv
+                INCLUDE_DIRS  ${INCLUDE_OBI} ${CV32E40X_INCLUDE} ${VICUNA_FPU_INCS} ${VICUNA_INCS} ${FPU_SS_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR}
                 TOP_MODULE vproc_top 
                 PREFIX Vvproc_top
                 ${TRACE}                                    
@@ -468,8 +468,8 @@ if ( ${SCALAR_CORE} STREQUAL "cv32e40x" )
                                 -CFLAGS "-std=gnu++14 -O2")
 
 elseif( ${SCALAR_CORE} STREQUAL "cv32a60x" ) #TODO: Verify/Test support for floating point vector systems with this core.  Currently, only Zve32x tested.
-    verilate(verilated_model SOURCES ${CV32A60X_SOURCE} ${VICUNA_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/vproc_top.sv
-                INCLUDE_DIRS ${CV32A60X_INCLUDE} ${VICUNA_INCS} ${CMAKE_CURRENT_SOURCE_DIR}
+    verilate(verilated_model SOURCES ${DESIGN_SRC_OBI} ${CV32A60X_SOURCE} ${VICUNA_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/${SCALAR_CORE}/vproc_top.sv
+                INCLUDE_DIRS ${INCLUDE_OBI} ${CV32A60X_INCLUDE} ${VICUNA_INCS} ${CMAKE_CURRENT_SOURCE_DIR}
                 TOP_MODULE vproc_top 
                 PREFIX Vvproc_top
                 ${TRACE}                                    
