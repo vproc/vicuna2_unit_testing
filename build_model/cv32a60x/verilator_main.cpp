@@ -351,6 +351,7 @@ int main(int argc, char **argv) {
 
         update_mem_write(top, (top->mem_addr_o & 0xFFFFFFFC), (top->mem_req_o && top->mem_we_o && top->mem_gnt_i), (top->mem_src_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_wdata_o), (unsigned char*)&(top->mem_be_o), (bool*)&(top->mem_wvalid_i), mem_rvalid_queue, mem_meta_queue, mem);
         update_mem_load(top,  (top->mem_addr_o & 0xFFFFFFFC), (top->mem_req_o && !top->mem_we_o && top->mem_gnt_i), top->mem_we_o, (top->mem_src_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_rdata_i), (bool*)&(top->mem_rvalid_i), (bool*)&(top->mem_err_i), (bool*)&(top->mem_src_i), mem_rdata_queue, mem_rvalid_queue, mem_meta_queue, mem);
+
         for(int p = 0; p < mem_ports; p++){
             update_mem_write(top, (top->vec_mem_addr_o[p] & 0xFFFFFFFC), (top->vec_mem_req_o[p] && top->vec_mem_we_o[p] && top->vec_mem_gnt_i[p]), (top->vec_mem_src_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->vec_mem_wdata_o[p]), (unsigned char*)&(top->vec_mem_be_o[p]), (bool*)&(top->vec_mem_wvalid_i[p]), vec_mem_rvalid_queue[p], vec_mem_meta_queue[p], mem);
             update_mem_load(top,  (top->vec_mem_addr_o[p] & 0xFFFFFFFC), (top->vec_mem_req_o[p] && !top->vec_mem_we_o[p] && top->vec_mem_gnt_i[p]), top->vec_mem_we_o[p], (top->vec_mem_src_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->vec_mem_rdata_i[p]), (bool*)&(top->vec_mem_rvalid_i[p]), (bool*)&(top->vec_mem_err_i[p]), (bool*)&(top->vec_mem_src_i), vec_mem_rdata_queue[p], vec_mem_rvalid_queue[p], vec_mem_meta_queue[p], mem);
@@ -495,6 +496,8 @@ int main(int argc, char **argv) {
         fprintf(stderr, "NOTE: ChipsAlliance Test numbering starts at 2\n"); 
         exit_code=1;
     }
+
+    dump_mem_region(dump_start, dump_end, mem, dump_path);
 
     if (tfp != NULL)
     {

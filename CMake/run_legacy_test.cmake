@@ -3,7 +3,7 @@
 #For reuse, provide the direct path to the files for VERILATED_DIR and BUILD_DIR
 #Provide the paths for the mem_trace .csv and signal trace .vcd as XXX_TRACE_ARGS to get those outputs.  
 #For test case counting, set argument to 1 for compliance with chipsalliance
-execute_process(COMMAND ${VERILATED_DIR}/verilated_model ${BUILD_DIR}/prog_${TEST_NAME}.txt ${MEM_PORTS} ${MEM_W} 4194304 ${MEM_LATENCY} 1 ${TEST_NAME} ${VREG_W} 1 ${VCD_TRACE_ARGS}
+execute_process(COMMAND ${MODEL_DIR}/verilated_model ${BUILD_DIR}/prog_${TEST_NAME}.txt ${MEM_PORTS} ${MEM_W} 4194304 ${MEM_LATENCY} 1 ${TEST_NAME} ${VREG_W} ${TEST_CASE_NUM} ${VCD_TRACE_FLAG} ${VCD_TRACE_ARG}
                 RESULT_VARIABLE RETURN_SIM)
 execute_process(COMMAND diff ${BUILD_DIR}/${TEST_NAME}_result.txt ${BUILD_DIR}/${TEST_NAME}_reference.txt 
                 RESULT_VARIABLE RETURN_DIFF)
