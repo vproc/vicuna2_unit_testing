@@ -206,7 +206,7 @@ macro(add_legacy_test_Spike TEST_NAME)
              WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
     message(STATUS "Successfully added Legacy Test ${folder}-${TEST_NAME}-Spike")
-    set_tests_properties(${folder}-${TEST_NAME}-Spike PROPERTIES TIMEOUT 60) #TODO: Find a reasonable timeout for these tests
+    set_tests_properties(${folder}-${TEST_NAME}-Spike PROPERTIES TIMEOUT 10) #TODO: Find a reasonable timeout for these tests
 
 endmacro()
 
