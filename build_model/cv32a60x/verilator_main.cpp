@@ -251,6 +251,7 @@ int main(int argc, char **argv) {
     bool dmem_req_limit = true;
 
     int num_outstanding_imem = 0;
+    int num_outstanding_vmem = 0;
 
     int num_read_req = 0;
 
@@ -275,8 +276,8 @@ int main(int argc, char **argv) {
         top->clk_i = 1;
 
         top->eval();
-        //update_stats(top);
-        //update_vcd(tfp, cycles_begin_trace, cycles_end_trace);
+        update_stats(top);
+        update_vcd(tfp, cycles_begin_trace, cycles_end_trace);
 
         //////////////////////////
         //Update Memory interfaces
@@ -329,6 +330,23 @@ int main(int argc, char **argv) {
                 vec_mem_meta_queue[i][j]   = vec_mem_meta_queue[i-1][j];
             }
         }
+
+        for(int p = 0; p < mem_ports; p++){
+
+            for (int i = mem_latency-1; i > 0; i--) {
+                for (int j = 0; j < mem_w/8; j++)
+                {
+                    vec_mem_rdata_queue[p][i][j] = vec_mem_rdata_queue[p][i-1][j];
+                }
+                vec_mem_rvalid_queue[p][i] = vec_mem_rvalid_queue[p][i-1];
+                for (int j = 0; j < 3; j++)
+                {
+                    vec_mem_meta_queue[p][i][j]   = vec_mem_meta_queue[p][i-1][j];
+                }
+            }
+        }
+
+
 
         mem_rvalid_queue[0] = false;
         mem_meta_queue[0][0]   = false;
@@ -397,13 +415,18 @@ int main(int argc, char **argv) {
         if (top->mem_rvalid_i || top->mem_wvalid_i) {
             dmem_busy = false;
         }
-         //Currently only one outstanding VMEM request allowed per port
+         //Currently only two outstanding vmem requests allowed per port
         for(int p = 0; p < mem_ports; p++){
             if (top->vec_mem_req_o[p] && top->vec_mem_gnt_i[p])
             {
-                vmem_busy[p] = true;
+                num_outstanding_vmem++;
+                if (num_outstanding_vmem == 2)
+                {
+                    vmem_busy[p] = true;
+                }
             }
             if (top->vec_mem_rvalid_i[p]) {
+                num_outstanding_vmem--;
                 vmem_busy[p] = false;
             }
         }
@@ -423,6 +446,8 @@ int main(int argc, char **argv) {
         }
 
         top->eval();
+        update_stats(top);
+        update_vcd(tfp, cycles_begin_trace, cycles_end_trace);
 
         //Use memory mapped IO at address 0x408 to signal success or failure
         char w_port;
@@ -434,6 +459,7 @@ int main(int argc, char **argv) {
             } else {
                 fprintf(stderr, "ERROR: TEST FAILURE - Output Mismatch - TEST %d - Output Mismatch\n", v_test_failure+v_test_success+2);
                 v_test_failure++;
+                break;
                 
             }
         } 

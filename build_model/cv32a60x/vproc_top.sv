@@ -398,9 +398,6 @@ assign vec_ready = vcore_xif.mem_valid;
 assign st_ready = obi_store_req.req;
 assign ld_ready = obi_load_req.req;
 
-logic [31:0]vec_addr_test;
-assign vec_addr_test= vcore_xif.mem_req.addr;
-
 // //Connection for vicuna data port
 // always_comb begin
 //   vec_mem_req_o = vcore_xif.mem_valid;
