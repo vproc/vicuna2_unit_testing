@@ -235,9 +235,6 @@ int main(int argc, char **argv) {
     update_vcd(tfp, 0, 0);
     top->mem_ignt_i = 1;
     top->mem_gnt_i = 1;
-    for(int i = 0; i < mem_ports; i++){
-        top->vec_mem_rvalid_i[i] = 1;
-    }
     char *endptr;
     int vreg_w = strtol(argv[7], &endptr, 10);
     
@@ -371,8 +368,8 @@ int main(int argc, char **argv) {
         update_mem_load(top,  (top->mem_addr_o & 0xFFFFFFFC), (top->mem_req_o && !top->mem_we_o && top->mem_gnt_i), top->mem_we_o, (top->mem_src_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->mem_rdata_i), (bool*)&(top->mem_rvalid_i), (bool*)&(top->mem_err_i), (bool*)&(top->mem_src_i), mem_rdata_queue, mem_rvalid_queue, mem_meta_queue, mem);
 
         for(int p = 0; p < mem_ports; p++){
-            update_mem_write(top, (top->vec_mem_addr_o[p] & 0xFFFFFFFC), (top->vec_mem_req_o[p] && top->vec_mem_we_o[p] && top->vec_mem_gnt_i[p]), (top->vec_mem_src_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->vec_mem_wdata_o[p]), (unsigned char*)&(top->vec_mem_be_o[p]), (bool*)&(top->vec_mem_wvalid_i[p]), vec_mem_rvalid_queue[p], vec_mem_meta_queue[p], mem);
-            update_mem_load(top,  (top->vec_mem_addr_o[p] & 0xFFFFFFFC), (top->vec_mem_req_o[p] && !top->vec_mem_we_o[p] && top->vec_mem_gnt_i[p]), top->vec_mem_we_o[p], (top->vec_mem_src_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->vec_mem_rdata_i[p]), (bool*)&(top->vec_mem_rvalid_i[p]), (bool*)&(top->vec_mem_err_i[p]), (bool*)&(top->vec_mem_src_i), vec_mem_rdata_queue[p], vec_mem_rvalid_queue[p], vec_mem_meta_queue[p], mem);
+            update_mem_write(top, (top->vec_mem_addr_o[p] & 0xFFFFFFFF), (top->vec_mem_req_o[p] && top->vec_mem_we_o[p] && top->vec_mem_gnt_i[p]), (top->vec_mem_src_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->vec_mem_wdata_o[p]), (unsigned char*)&(top->vec_mem_be_o[p]), (bool*)&(top->vec_mem_wvalid_i[p]), vec_mem_rvalid_queue[p], vec_mem_meta_queue[p], mem);
+            update_mem_load(top,  (top->vec_mem_addr_o[p] & 0xFFFFFFFF), (top->vec_mem_req_o[p] && !top->vec_mem_we_o[p] && top->vec_mem_gnt_i[p]), top->vec_mem_we_o[p], (top->vec_mem_src_o), mem_w, mem_latency, mem_sz, (unsigned char*)&(top->vec_mem_rdata_i[p]), (bool*)&(top->vec_mem_rvalid_i[p]), (bool*)&(top->vec_mem_err_i[p]), (bool*)&(top->vec_mem_src_i), vec_mem_rdata_queue[p], vec_mem_rvalid_queue[p], vec_mem_meta_queue[p], mem);
         }
 
         //Update instruction memory interface.  Never a write here.  Metadata field repurposed to store obi.id field, used internally for the index in the fetchbuffer.
