@@ -1,0 +1,49 @@
+diff --git a/riscv/v_ext_macros.h b/riscv/v_ext_macros.h
+index 3e7dc450..15b24fb5 100644
+--- a/riscv/v_ext_macros.h
++++ b/riscv/v_ext_macros.h
+@@ -1256,19 +1256,18 @@ reg_t index[P.VU.vlmax]; \
+ 
+ #define VI_ST(stride, offset, elt_width, is_mask_ldst) \
+   const reg_t nf = insn.v_nf() + 1; \
+-  VI_CHECK_STORE(elt_width, is_mask_ldst); \
+-  const reg_t vl = is_mask_ldst ? ((P.VU.vl->read() + 7) / 8) : P.VU.vl->read(); \
+-  const reg_t baseAddr = RS1; \
+-  const reg_t vs3 = insn.rd(); \
+-  for (reg_t i = 0; i < vl; ++i) { \
+-    VI_STRIP(i) \
+-    VI_ELEMENT_SKIP; \
+-    P.VU.vstart->write(i); \
+-    for (reg_t fn = 0; fn < nf; ++fn) { \
+-      elt_width##_t val = P.VU.elt<elt_width##_t>(vs3 + fn * emul, vreg_inx); \
+-      MMU.store<elt_width##_t>( \
+-        baseAddr + (stride) + (offset) * sizeof(elt_width##_t), val); \
+-    } \
++  for (reg_t fn = 0; fn < nf; ++fn) { \
++    VI_CHECK_STORE(elt_width, is_mask_ldst); \
++    const reg_t vl = is_mask_ldst ? ((P.VU.vl->read() + 7) / 8) : P.VU.vl->read(); \
++    const reg_t baseAddr = RS1; \
++    const reg_t vs3 = insn.rd(); \
++    for (reg_t i = 0; i < vl; ++i) { \
++      VI_STRIP(i) \
++      VI_ELEMENT_SKIP; \
++        elt_width##_t val = P.VU.elt<elt_width##_t>(vs3 + fn * emul, vreg_inx); \
++        MMU.store<elt_width##_t>( \
++          baseAddr + (stride) + (offset) * sizeof(elt_width##_t), val); \
++      } \
+   } \
+   P.VU.vstart->write(0);
+ 
+@@ -1281,11 +1280,10 @@ reg_t index[P.VU.vlmax]; \
+   if (!is_seg) \
+     require(nf == 1); \
+   VI_DUPLICATE_VREG(insn.rs2(), elt_width); \
++  for (reg_t fn = 0; fn < nf; ++fn) { \
+   for (reg_t i = 0; i < vl; ++i) { \
+     VI_STRIP(i) \
+     VI_ELEMENT_SKIP; \
+-    P.VU.vstart->write(i); \
+-    for (reg_t fn = 0; fn < nf; ++fn) { \
+       switch (P.VU.vsew) { \
+       case e8: \
+         MMU.store<uint8_t>(baseAddr + index[i] + fn * 1, \
